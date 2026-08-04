@@ -6,53 +6,23 @@ Rectangle {
     id: root
     property string title: "Metric"
     property string value: "0"
-    property string icon: "◆"
+    property string subtext: "Active status"
     property color accentColor: Theme.primary
 
     implicitWidth: 200
-    implicitHeight: 110
+    implicitHeight: 115
     radius: Theme.cornerRadius
-    color: Theme.surface
-    border.color: cardHover.containsMouse ? Qt.alpha(accentColor, 0.5) : Theme.surfaceBorder
-    border.width: cardHover.containsMouse ? 1.5 : 1
+    color: hoverArea.containsMouse ? Theme.surfaceElevated : Theme.surface
+    border.color: hoverArea.containsMouse ? Qt.alpha(accentColor, 0.4) : Theme.surfaceBorder
+    border.width: 1
 
+    Behavior on color { ColorAnimation { duration: Theme.animNormal } }
     Behavior on border.color { ColorAnimation { duration: Theme.animNormal } }
-
-    // Gradient shimmer top edge
-    Rectangle {
-        width: parent.width
-        height: 3
-        anchors.top: parent.top
-        radius: Theme.cornerRadius
-        gradient: Gradient {
-            orientation: Gradient.Horizontal
-            GradientStop { position: 0.0; color: root.accentColor }
-            GradientStop { position: 1.0; color: Qt.alpha(root.accentColor, 0.2) }
-        }
-    }
 
     Column {
         anchors.fill: parent
-        anchors.margins: 16
-        anchors.topMargin: 20
-        spacing: 6
-
-        Row {
-            spacing: 8
-            Text {
-                text: root.icon
-                color: root.accentColor
-                font.pixelSize: Theme.fontSizeSmall
-                anchors.verticalCenter: parent.verticalCenter
-            }
-            Text {
-                text: root.title
-                color: Theme.textSecondary
-                font.pixelSize: Theme.fontSizeSmall
-                font.weight: Font.Medium
-                anchors.verticalCenter: parent.verticalCenter
-            }
-        }
+        anchors.margins: 18
+        spacing: 4
 
         Text {
             text: root.value
@@ -60,10 +30,36 @@ Rectangle {
             font.pixelSize: Theme.fontSizeHero
             font.bold: true
         }
+
+        Text {
+            text: root.title
+            color: Theme.textSecondary
+            font.pixelSize: Theme.fontSizeSmall
+            font.weight: Font.Medium
+        }
+    }
+
+    // Top decorative curve accent (similar to reference UI card charts)
+    Canvas {
+        id: curveCanvas
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        height: 35
+        onPaint: {
+            var ctx = getContext("2d")
+            ctx.clearRect(0, 0, width, height)
+            ctx.beginPath()
+            ctx.moveTo(10, 25)
+            ctx.bezierCurveTo(width * 0.3, 5, width * 0.7, 30, width - 10, 15)
+            ctx.strokeStyle = root.accentColor
+            ctx.lineWidth = 2.5
+            ctx.stroke()
+        }
     }
 
     MouseArea {
-        id: cardHover
+        id: hoverArea
         anchors.fill: parent
         hoverEnabled: true
         propagateComposedEvents: true

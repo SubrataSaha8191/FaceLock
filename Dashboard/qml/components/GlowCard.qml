@@ -1,30 +1,18 @@
 import QtQuick
-import QtQuick.Effects
 import "../themes"
 
 Rectangle {
     id: root
     property bool glowOnHover: true
-    property color glowColor: Theme.surfaceGlow
+    property color accentGlow: Theme.glassBorder
 
     radius: Theme.cornerRadius
-    color: Theme.surface
-    border.color: hoverArea.containsMouse ? Qt.alpha(glowColor, 0.5) : Theme.surfaceBorder
-    border.width: hoverArea.containsMouse ? 1.5 : 1
+    color: hoverArea.containsMouse ? Theme.cardHover : Theme.cardBackground
+    border.color: hoverArea.containsMouse ? Theme.accent : root.accentGlow
+    border.width: 1
 
-    Behavior on border.color {
-        ColorAnimation { duration: Theme.animNormal }
-    }
-
-    // Subtle inner gradient overlay
-    Rectangle {
-        anchors.fill: parent
-        radius: parent.radius
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: Qt.alpha(root.glowColor, 0.03) }
-            GradientStop { position: 1.0; color: "transparent" }
-        }
-    }
+    Behavior on color { ColorAnimation { duration: Theme.animFast } }
+    Behavior on border.color { ColorAnimation { duration: Theme.animFast } }
 
     MouseArea {
         id: hoverArea

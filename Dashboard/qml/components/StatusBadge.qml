@@ -1,17 +1,16 @@
 import QtQuick
-import QtQuick.Controls
 import "../themes"
 
 Rectangle {
     id: root
-    property string text: "Active"
-    property color badgeColor: Theme.success
+    property string text: "STATUS"
+    property color badgeColor: "#161822"
 
-    implicitWidth: label.implicitWidth + 32
-    implicitHeight: 26
-    radius: 13
-    color: Qt.alpha(badgeColor, 0.12)
-    border.color: Qt.alpha(badgeColor, 0.4)
+    implicitWidth: badgeText.implicitWidth + 24
+    implicitHeight: 22
+    radius: Theme.cornerRadiusSmall
+    color: root.badgeColor
+    border.color: Theme.glassBorder
     border.width: 1
 
     Row {
@@ -19,27 +18,19 @@ Rectangle {
         spacing: 6
 
         Rectangle {
-            width: 7
-            height: 7
-            radius: 3.5
-            color: root.badgeColor
+            width: 6
+            height: 6
+            radius: 3
+            color: Theme.accent
             anchors.verticalCenter: parent.verticalCenter
-
-            // Pulse animation on the live dot
-            SequentialAnimation on opacity {
-                loops: Animation.Infinite
-                NumberAnimation { to: 0.4; duration: 800; easing.type: Easing.InOutSine }
-                NumberAnimation { to: 1.0; duration: 800; easing.type: Easing.InOutSine }
-            }
         }
 
         Text {
-            id: label
+            id: badgeText
             text: root.text
-            color: root.badgeColor
+            color: Theme.textPrimary
             font.pixelSize: Theme.fontSizeXs
             font.bold: true
-            font.letterSpacing: 0.5
             anchors.verticalCenter: parent.verticalCenter
         }
     }

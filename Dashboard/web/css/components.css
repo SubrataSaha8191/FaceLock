@@ -1,0 +1,95 @@
+/* ═══ Direct Unboxed Canvas Components ═══ */
+
+/* Status Pill */
+.status-pill {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px;
+    font-family: var(--display); font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    color: #10B981;
+}
+.pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: #10B981; animation: pulse 2s ease infinite; }
+
+/* Buttons */
+.btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 12px 26px;
+    font-family: var(--display); font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    text-transform: uppercase; border-radius: var(--pill); cursor: pointer;
+    transition: all 200ms ease; border: none; outline: none; flex-shrink: 0;
+}
+.btn-accent { background: var(--blue-grad); color: #FFF; box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.35); }
+.btn-accent:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -5px rgba(37, 99, 235, 0.45); }
+
+.btn-orange { background: var(--orange-grad); color: #FFF; box-shadow: 0 10px 25px -5px rgba(255, 87, 34, 0.35); }
+.btn-orange:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -5px rgba(255, 87, 34, 0.45); }
+
+.btn-spline-center {
+    background: #0F172A; color: #1EFC51; font-size: 13px; padding: 16px 36px; font-family: var(--display); font-weight: 800;
+    letter-spacing: 2px; transition: all 250ms ease; border-radius: var(--pill);
+    box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.25);
+}
+.btn-spline-center:hover { transform: scale(1.06); background: #1EFC51; color: #0F172A; }
+
+/* Trash Icon Button for Deleting Users */
+.btn-icon-danger {
+    background: #FEF2F2; color: #EF4444; border: 1px solid #FCA5A5;
+    border-radius: 50%; width: 34px; height: 34px; display: flex;
+    align-items: center; justify-content: center; cursor: pointer;
+    transition: all 200ms ease; flex-shrink: 0; outline: none; padding: 0;
+}
+.btn-icon-danger:hover { background: #EF4444; color: #FFF; transform: scale(1.1); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+
+/* Direct Unboxed User List Rows */
+.user-row {
+    display: flex; align-items: center; gap: 16px; padding: 16px 0;
+    background: transparent; border-bottom: 1px solid var(--border);
+    width: 100%; max-width: 480px; box-shadow: none; border-radius: 0;
+}
+.user-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--blue-grad); color: #FFF; font-family: var(--display);
+    font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.user-info { flex: 1; min-width: 0; text-align: left; }
+.user-name { font-family: var(--display); font-size: 15px; font-weight: 700; color: var(--text-primary); }
+.user-id { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+.user-tag {
+    font-family: var(--display); font-size: 9px; font-weight: 800; letter-spacing: 1.5px;
+    color: #2563EB; padding: 5px 12px; background: #EFF6FF; border-radius: var(--pill); flex-shrink: 0;
+}
+
+/* System Diagnostic & Telemetry Grid */
+.sys-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; font-size: 13px; color: var(--text-dim); border-bottom: 1px solid var(--border); }
+.sys-dot { width: 7px; height: 7px; border-radius: 50%; background: #10B981; flex-shrink: 0; display: inline-block; margin-right: 8px; }
+
+/* Subtext & Form Controls */
+.subtext-hero { max-width: 420px; color: var(--text-dim); font-size: 14px; line-height: 1.6; margin-top: 16px; margin-bottom: 28px; }
+.form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.form-label { font-family: var(--display); font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); }
+.form-input {
+    background: #FFF; border: 1px solid var(--border); border-radius: 14px;
+    padding: 14px 18px; font-family: var(--font); font-size: 14px; color: var(--text-primary); outline: none;
+}
+.form-input:focus { border-color: #2563EB; }
+
+/* Expanded Large Camera Viewport */
+.camera-feed-lg {
+    width: 100%; height: calc(100vh - 200px); min-height: 620px;
+    background: #0F172A; border-radius: 24px; object-fit: cover;
+    box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.18);
+}
+.camera-feed { width: 100%; aspect-ratio: 4/3; background: #0F172A; border-radius: 18px; object-fit: cover; }
+
+/* Dynamic Audit Logs */
+.log-row { display: grid; grid-template-columns: 180px 120px 80px 1fr; gap: 14px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.log-event { font-family: var(--display); font-weight: 700; color: var(--text-primary); }
+.log-user { color: var(--text-dim); }
+.log-status { font-family: var(--display); font-size: 11px; font-weight: 800; letter-spacing: 1px; }
+.log-status.ok { color: #10B981; }
+.log-status.fail { color: #EF4444; }
+.log-time { color: var(--text-ghost); font-size: 12px; text-align: right; }
+
+/* Settings Controls */
+.setting-row { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid var(--border); }
+.setting-label { font-family: var(--display); font-size: 15px; font-weight: 700; }
+.setting-desc { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+input[type="range"] { -webkit-appearance: none; width: 220px; height: 6px; background: #E2E8F0; border-radius: 3px; outline: none; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #2563EB; cursor: pointer; }

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import "../themes"
 
 Rectangle {
@@ -7,135 +8,101 @@ Rectangle {
     property int currentIndex: 0
     signal pageSelected(int index)
 
-    width: 240
-    color: Theme.surface
-    border.color: Theme.surfaceBorder
+    width: 210
+    color: Theme.sidebarBackground
+    border.color: Theme.glassBorder
     border.width: 1
 
-    Column {
+    ColumnLayout {
         anchors.fill: parent
-        spacing: 0
+        anchors.margins: 14
+        spacing: 12
 
-        // Brand Header
-        Item {
-            width: parent.width
-            height: 72
+        // Top Brand Header (Inspired by HUBTOWN / Noomo typography)
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 10
 
-            Row {
-                anchors.centerIn: parent
-                spacing: 10
+            Rectangle {
+                implicitWidth: 32; implicitHeight: 32; radius: 4
+                color: "#181A24"
+                border.color: Theme.accent; border.width: 1
 
-                Text {
-                    text: "◉"
-                    color: Theme.primary
-                    font.pixelSize: 22
-                    anchors.verticalCenter: parent.verticalCenter
+                VectorIcon {
+                    name: "brand"
+                    iconColor: Theme.accent
+                    implicitWidth: 16; implicitHeight: 16
+                    anchors.centerIn: parent
                 }
+            }
 
-                Column {
-                    anchors.verticalCenter: parent.verticalCenter
-                    Text {
-                        text: "FaceLock"
-                        color: Theme.textPrimary
-                        font.pixelSize: Theme.fontSizeTitle
-                        font.bold: true
-                        font.letterSpacing: 0.5
-                    }
-                    Text {
-                        text: "Biometric Security"
-                        color: Theme.textMuted
-                        font.pixelSize: Theme.fontSizeXs
-                        font.letterSpacing: 0.8
-                    }
-                }
+            Column {
+                Text { text: "FACELOCK"; color: Theme.textPrimary; font.pixelSize: 13; font.bold: true; font.letterSpacing: 1 }
+                Text { text: "CORE PLATFORM"; color: Theme.textMuted; font.pixelSize: 9; font.letterSpacing: 0.5 }
             }
         }
 
-        // Gradient separator
-        Rectangle {
-            width: parent.width - 32
-            height: 1
-            anchors.horizontalCenter: parent.horizontalCenter
-            gradient: Gradient {
-                orientation: Gradient.Horizontal
-                GradientStop { position: 0.0; color: "transparent" }
-                GradientStop { position: 0.5; color: Theme.surfaceBorder }
-                GradientStop { position: 1.0; color: "transparent" }
-            }
-        }
+        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.glassBorder }
 
-        Item { width: 1; height: 12 }
-
-        // Section label
         Text {
-            text: "NAVIGATION"
+            text: "SYSTEM NAVIGATION"
             color: Theme.textMuted
-            font.pixelSize: Theme.fontSizeXs
+            font.pixelSize: 9
             font.bold: true
-            font.letterSpacing: 1.2
-            leftPadding: 24
+            font.letterSpacing: 1
+            Layout.topMargin: 4
         }
-
-        Item { width: 1; height: 8 }
 
         Repeater {
             model: [
-                { label: "Dashboard",    icon: "◫" },
-                { label: "Enrollment",   icon: "◎" },
-                { label: "Camera Test",  icon: "◉" },
-                { label: "Settings",     icon: "⚙" },
-                { label: "Audit Logs",   icon: "☰" }
+                { label: "Overview",   icon: "dashboard" },
+                { label: "Enrollment", icon: "enrollment" },
+                { label: "Perception", icon: "camera" },
+                { label: "Settings",   icon: "settings" },
+                { label: "Audit Logs", icon: "logs" }
             ]
 
             Button {
                 required property int index
                 required property var modelData
 
-                width: parent.width - 16
-                height: 44
-                anchors.horizontalCenter: parent.horizontalCenter
+                Layout.fillWidth: true
+                implicitHeight: 38
 
                 background: Rectangle {
                     radius: Theme.cornerRadiusSmall
                     color: root.currentIndex === index
-                        ? Qt.alpha(Theme.primary, 0.12)
-                        : (hovered ? Qt.alpha(Theme.surfaceBorder, 0.4) : "transparent")
+                        ? "#181B26"
+                        : (hovered ? "#141620" : "transparent")
+                    border.color: root.currentIndex === index ? Qt.rgba(0, 240, 255, 0.4) : "transparent"
+                    border.width: root.currentIndex === index ? 1 : 0
 
-                    Behavior on color { ColorAnimation { duration: Theme.animFast } }
-
-                    // Active indicator bar
                     Rectangle {
-                        width: 3
-                        height: parent.height - 12
+                        visible: root.currentIndex === index
+                        width: 3; height: 20; radius: 1.5
+                        color: Theme.accent
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                        radius: 1.5
-                        color: Theme.primary
-                        visible: root.currentIndex === index
                     }
                 }
 
                 contentItem: Row {
                     spacing: 12
-                    leftPadding: 18
+                    leftPadding: 12
 
-                    Text {
-                        text: modelData.icon
-                        color: root.currentIndex === index ? Theme.primary : Theme.textSecondary
-                        font.pixelSize: Theme.fontSizeBody
+                    VectorIcon {
+                        name: modelData.icon
+                        iconColor: root.currentIndex === index ? Theme.accent : Theme.textMuted
+                        implicitWidth: 16; implicitHeight: 16
                         anchors.verticalCenter: parent.verticalCenter
-
-                        Behavior on color { ColorAnimation { duration: Theme.animFast } }
                     }
 
                     Text {
                         text: modelData.label
-                        color: root.currentIndex === index ? Theme.primary : Theme.textPrimary
-                        font.pixelSize: Theme.fontSizeBody
-                        font.weight: root.currentIndex === index ? Font.DemiBold : Font.Normal
+                        color: root.currentIndex === index ? Theme.textPrimary : Theme.textSecondary
+                        font.pixelSize: Theme.fontSizeSmall
+                        font.bold: root.currentIndex === index
                         anchors.verticalCenter: parent.verticalCenter
-
-                        Behavior on color { ColorAnimation { duration: Theme.animFast } }
                     }
                 }
 
@@ -145,5 +112,7 @@ Rectangle {
                 }
             }
         }
+
+        Item { Layout.fillHeight: true }
     }
 }

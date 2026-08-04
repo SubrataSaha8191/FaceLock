@@ -9,49 +9,38 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 28
-        spacing: 20
+        anchors.margins: 24
+        spacing: 16
 
         RowLayout {
             Layout.fillWidth: true
-
-            Row {
-                spacing: 12
-                Layout.fillWidth: true
-                Text { text: "☰"; color: Theme.primary; font.pixelSize: Theme.fontSizeHeader }
-                Column {
-                    Text { text: "Security Audit Trail"; color: Theme.textPrimary; font.pixelSize: Theme.fontSizeHeader; font.bold: true }
-                    Text { text: "Structured JSON event log for all security decisions"; color: Theme.textMuted; font.pixelSize: Theme.fontSizeSmall }
-                }
+            Column {
+                Text { text: "Security Audit Log"; color: Theme.textPrimary; font.pixelSize: Theme.fontSizeHeader; font.bold: true }
+                Text { text: "Real-time security authentication event log"; color: Theme.textSecondary; font.pixelSize: Theme.fontSizeSmall }
             }
-
-            StatusBadge {
-                text: "REAL-TIME"
-                badgeColor: Theme.info
-            }
+            Item { Layout.fillWidth: true }
+            StatusBadge { text: "Realtime Feed" }
         }
 
         GlowCard {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            glowColor: Theme.info
 
             ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: 16
                 spacing: 8
 
-                // Column headers
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 0
-                    Text { text: "EVENT"; color: Theme.textMuted; font.pixelSize: Theme.fontSizeXs; font.bold: true; font.letterSpacing: 1; Layout.preferredWidth: 150 }
-                    Text { text: "USER"; color: Theme.textMuted; font.pixelSize: Theme.fontSizeXs; font.bold: true; font.letterSpacing: 1; Layout.preferredWidth: 120 }
-                    Text { text: "STATUS"; color: Theme.textMuted; font.pixelSize: Theme.fontSizeXs; font.bold: true; font.letterSpacing: 1; Layout.preferredWidth: 100 }
-                    Text { text: "TIMESTAMP"; color: Theme.textMuted; font.pixelSize: Theme.fontSizeXs; font.bold: true; font.letterSpacing: 1; Layout.fillWidth: true }
+                    Text { text: "EVENT"; color: Theme.textMuted; font.pixelSize: Theme.fontSizeXs; font.bold: true; Layout.preferredWidth: 150 }
+                    Text { text: "USER"; color: Theme.textMuted; font.pixelSize: Theme.fontSizeXs; font.bold: true; Layout.preferredWidth: 120 }
+                    Text { text: "STATUS"; color: Theme.textMuted; font.pixelSize: Theme.fontSizeXs; font.bold: true; Layout.preferredWidth: 100 }
+                    Text { text: "TIMESTAMP"; color: Theme.textMuted; font.pixelSize: Theme.fontSizeXs; font.bold: true; Layout.fillWidth: true }
                 }
 
-                Rectangle { Layout.fillWidth: true; height: 1; color: Theme.surfaceBorder }
+                Rectangle { Layout.fillWidth: true; height: 1; color: Theme.glassBorder }
 
                 ScrollView {
                     Layout.fillWidth: true
@@ -74,24 +63,18 @@ Item {
                             required property var modelData
                             required property int index
                             width: logListView.width
-                            height: 36
+                            height: 38
                             radius: Theme.cornerRadiusSmall
-                            color: index % 2 === 0 ? "transparent" : Qt.alpha(Theme.surfaceElevated, 0.5)
+                            color: index % 2 === 0 ? "transparent" : Qt.rgba(1, 1, 1, 0.04)
 
                             RowLayout {
                                 anchors.fill: parent
-                                anchors.leftMargin: 4
+                                anchors.leftMargin: 8
                                 spacing: 0
 
-                                // Event type with color coding
                                 Text {
                                     text: modelData.event
-                                    color: {
-                                        if (modelData.event === "LOCKOUT") return Theme.danger
-                                        if (modelData.event === "ENROLLMENT") return Theme.primary
-                                        if (modelData.event === "AUTH_ATTEMPT") return Theme.warning
-                                        return Theme.textSecondary
-                                    }
+                                    color: Theme.textPrimary
                                     font.pixelSize: Theme.fontSizeSmall
                                     font.bold: true
                                     Layout.preferredWidth: 150
@@ -99,14 +82,13 @@ Item {
 
                                 Text {
                                     text: modelData.user
-                                    color: Theme.textPrimary
+                                    color: Theme.textSecondary
                                     font.pixelSize: Theme.fontSizeSmall
                                     Layout.preferredWidth: 120
                                 }
 
                                 StatusBadge {
                                     text: modelData.success ? "OK" : "FAIL"
-                                    badgeColor: modelData.success ? Theme.success : Theme.danger
                                     Layout.preferredWidth: 100
                                 }
 
@@ -114,7 +96,6 @@ Item {
                                     text: modelData.ts
                                     color: Theme.textMuted
                                     font.pixelSize: Theme.fontSizeSmall
-                                    font.family: "monospace"
                                     Layout.fillWidth: true
                                 }
                             }

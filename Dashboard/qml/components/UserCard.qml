@@ -8,89 +8,90 @@ Rectangle {
     property string username: ""
     signal deleteRequested(string userId)
 
-    implicitWidth: 340
-    implicitHeight: 72
-    radius: Theme.cornerRadius
-    color: cardHover.containsMouse ? Theme.surfaceElevated : Theme.surface
-    border.color: cardHover.containsMouse ? Qt.alpha(Theme.primary, 0.3) : Theme.surfaceBorder
+    implicitWidth: 500
+    implicitHeight: 48
+    radius: Theme.cornerRadiusSmall
+    color: cardHover.containsMouse ? Theme.cardHover : Theme.cardBackground
+    border.color: cardHover.containsMouse ? Theme.accent : Theme.glassBorder
     border.width: 1
 
-    Behavior on color { ColorAnimation { duration: Theme.animNormal } }
-    Behavior on border.color { ColorAnimation { duration: Theme.animNormal } }
+    Behavior on color { ColorAnimation { duration: Theme.animFast } }
 
     Row {
         anchors.fill: parent
-        anchors.margins: 14
-        spacing: 14
+        anchors.leftMargin: 12
+        anchors.rightMargin: 12
+        spacing: 12
 
-        // Avatar circle with gradient border
         Rectangle {
-            width: 44
-            height: 44
-            radius: 22
-            color: "transparent"
-            border.width: 2
-            border.color: Theme.primary
+            width: 28; height: 28; radius: 4
+            color: "#181B26"
+            border.color: Theme.accent; border.width: 1
             anchors.verticalCenter: parent.verticalCenter
 
-            Rectangle {
+            Text {
+                text: root.username.length > 0 ? root.username.substring(0, 2).toUpperCase() : "US"
+                color: Theme.accent
+                font.pixelSize: 11
+                font.bold: true
                 anchors.centerIn: parent
-                width: 38
-                height: 38
-                radius: 19
-                color: Qt.alpha(Theme.primary, 0.15)
-
-                Text {
-                    text: root.username.length > 0 ? root.username.charAt(0).toUpperCase() : "U"
-                    color: Theme.primary
-                    font.pixelSize: Theme.fontSizeTitle
-                    font.bold: true
-                    anchors.centerIn: parent
-                }
             }
         }
 
-        Column {
+        Text {
+            text: root.username
+            color: Theme.textPrimary
+            font.pixelSize: Theme.fontSizeSmall
+            font.bold: true
             anchors.verticalCenter: parent.verticalCenter
-            width: parent.width - 130
-            spacing: 3
+            width: 140
+            elide: Text.ElideRight
+        }
+
+        Rectangle {
+            implicitWidth: 74; implicitHeight: 20; radius: 4
+            color: "#181B26"; border.color: Theme.glassBorder; border.width: 1
+            anchors.verticalCenter: parent.verticalCenter
 
             Text {
-                text: root.username
-                color: Theme.textPrimary
-                font.pixelSize: Theme.fontSizeBody
-                font.bold: true
-                elide: Text.ElideRight
-                width: parent.width
-            }
-
-            Text {
-                text: root.userId
+                text: "AES-256"
                 color: Theme.textMuted
-                font.pixelSize: Theme.fontSizeXs
-                font.letterSpacing: 0.3
-                elide: Text.ElideRight
-                width: parent.width
+                font.pixelSize: 10
+                anchors.centerIn: parent
             }
         }
 
-        PrimaryButton {
-            text: "✕"
-            btnColor: Qt.alpha(Theme.danger, 0.15)
-            hoverColor: Theme.danger
-            pressColor: Qt.alpha(Theme.danger, 0.6)
-            implicitWidth: 36
-            implicitHeight: 36
+        Text {
+            text: "ID: " + root.userId
+            color: Theme.textMuted
+            font.pixelSize: Theme.fontSizeXs
             anchors.verticalCenter: parent.verticalCenter
-            onClicked: root.deleteRequested(root.userId)
+            elide: Text.ElideRight
+            width: 100
+        }
 
-            contentItem: Text {
-                text: "✕"
-                color: Theme.danger
-                font.pixelSize: Theme.fontSizeBody
-                font.bold: true
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
+        Item { width: 1; height: 1 }
+
+        Rectangle {
+            width: 26; height: 26; radius: 4
+            color: deleteHover.containsMouse ? Qt.rgba(239, 68, 68, 0.2) : "transparent"
+            border.color: deleteHover.containsMouse ? Theme.danger : "transparent"
+            border.width: 1
+            anchors.verticalCenter: parent.verticalCenter
+
+            VectorIcon {
+                name: "close"
+                iconColor: deleteHover.containsMouse ? Theme.danger : Theme.textMuted
+                implicitWidth: 12; implicitHeight: 12
+                anchors.centerIn: parent
+            }
+
+            MouseArea {
+                id: deleteHover
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.deleteRequested(root.userId)
             }
         }
     }

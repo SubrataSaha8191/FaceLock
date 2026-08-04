@@ -3,24 +3,26 @@ import "../themes"
 
 Row {
     id: root
-    property string icon: "●"
-    property string label: ""
+    property string iconName: "dashboard"
+    property string label: "Label"
     property color iconColor: Theme.primary
-    property int fontSize: Theme.fontSizeBody
+    property color textColor: Theme.textPrimary
 
     spacing: 10
 
-    Text {
-        text: root.icon
-        color: root.iconColor
-        font.pixelSize: root.fontSize + 2
+    VectorIcon {
+        name: root.iconName
+        iconColor: root.iconColor
+        implicitWidth: 18
+        implicitHeight: 18
         anchors.verticalCenter: parent.verticalCenter
     }
 
     Text {
         text: root.label
-        color: Theme.textPrimary
-        font.pixelSize: root.fontSize
+        color: root.textColor
+        font.pixelSize: Theme.fontSizeBody
+        font.bold: true
         anchors.verticalCenter: parent.verticalCenter
     }
 }

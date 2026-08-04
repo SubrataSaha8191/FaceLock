@@ -7,11 +7,14 @@ import "themes"
 
 ApplicationWindow {
     id: window
-    width: 1120
-    height: 720
+    width: 1240
+    height: 780
     visible: true
-    title: "FaceLock — Biometric Security Dashboard"
+    title: "FaceLock Platform"
     color: Theme.background
+
+    // Animated Aurora Glow Background Layer
+    AuroraBackground {}
 
     RowLayout {
         anchors.fill: parent
@@ -30,82 +33,54 @@ ApplicationWindow {
             Layout.fillHeight: true
             spacing: 0
 
-            // Premium status bar
+            // Top Header Bar
             Rectangle {
                 Layout.fillWidth: true
-                implicitHeight: 44
-                color: Theme.surface
-                border.color: Theme.surfaceBorder
-                border.width: 1
+                implicitHeight: 56
+                color: Qt.rgba(0.08, 0.09, 0.12, 0.6)
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: 24
-                    anchors.rightMargin: 24
+                    anchors.leftMargin: 20
+                    anchors.rightMargin: 20
+                    spacing: 14
 
-                    Text {
-                        id: statusText
-                        text: "System Ready"
-                        color: Theme.textSecondary
-                        font.pixelSize: Theme.fontSizeSmall
-                        Layout.fillWidth: true
+                    StyledTextField {
+                        id: searchField
+                        placeholderText: "Search identities, events..."
+                        iconName: "search"
+                        implicitWidth: 260
                     }
 
-                    // Live clock
-                    Text {
-                        id: clockText
-                        color: Theme.textMuted
-                        font.pixelSize: Theme.fontSizeXs
-                        font.letterSpacing: 0.5
+                    Item { Layout.fillWidth: true }
 
-                        Timer {
-                            interval: 1000
-                            running: true
-                            repeat: true
-                            triggeredOnStart: true
-                            onTriggered: {
-                                var d = new Date()
-                                clockText.text = d.toLocaleTimeString(Qt.locale(), "HH:mm:ss")
-                            }
-                        }
-                    }
-
-                    Item { width: 16 }
-
-                    StatusBadge {
-                        text: "PROTECTED"
-                        badgeColor: Theme.success
+                    PrimaryButton {
+                        text: "+ Enroll User"
+                        implicitWidth: 110
+                        onClicked: navBar.pageSelected(1)
                     }
                 }
             }
 
-            // Page content with fade transition
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: Theme.glassBorder
+            }
+
+            // Main Views Stack
             StackLayout {
                 id: pageLayout
                 currentIndex: 0
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                onCurrentIndexChanged: {
-                    for (var i = 0; i < children.length; i++) {
-                        children[i].opacity = (i === currentIndex) ? 1 : 0
-                    }
-                }
-
-                DashboardPage { Behavior on opacity { NumberAnimation { duration: Theme.animSlow } } }
-                EnrollmentPage { Behavior on opacity { NumberAnimation { duration: Theme.animSlow } } }
-                CameraPreviewPage { Behavior on opacity { NumberAnimation { duration: Theme.animSlow } } }
-                SettingsPage { Behavior on opacity { NumberAnimation { duration: Theme.animSlow } } }
-                LogsPage { Behavior on opacity { NumberAnimation { duration: Theme.animSlow } } }
+                DashboardPage {}
+                EnrollmentPage {}
+                CameraPreviewPage {}
+                SettingsPage {}
+                LogsPage {}
             }
-        }
-    }
-
-    Connections {
-        target: typeof facelockBridge !== "undefined" ? facelockBridge : null
-        function onStatusMessageChanged(message, isSuccess) {
-            statusText.text = message
-            statusText.color = isSuccess ? Theme.success : Theme.danger
         }
     }
 }

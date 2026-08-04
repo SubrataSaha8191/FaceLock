@@ -1,0 +1,47 @@
+/* ═══ Plain White Canvas Design System ═══ */
+:root {
+    --bg: #FFFFFF;
+    --canvas-card: #FFFFFF;
+    --text-primary: #0F172A;
+    --text-dim: #475569;
+    --text-ghost: #94A3B8;
+    --border: #E2E8F0;
+    
+    /* Vibrant Accent Gradients for Text & Buttons */
+    --blue-grad: linear-gradient(135deg, #0052FF 0%, #3B82F6 100%);
+    --orange-grad: linear-gradient(135deg, #FF3800 0%, #FF7000 100%);
+    --green-accent: #10B981;
+    --green-bright: #1EFC51;
+    
+    --font: 'Inter', -apple-system, sans-serif;
+    --display: 'Syne', sans-serif;
+    --pill: 999px;
+    --radius: 20px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+    height: 100%; background: #FFFFFF; color: var(--text-primary);
+    font-family: var(--font); font-size: 14px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased; overflow: hidden;
+}
+body { display: flex; position: relative; background: #FFFFFF; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+
+/* Bold Spline Editorial Typography */
+.hero-number {
+    font-family: var(--display); font-weight: 800; font-style: italic;
+    font-size: 64px; letter-spacing: -2px; line-height: 0.9;
+    background: var(--blue-grad); -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; background-clip: text; display: block;
+}
+.hero-label {
+    font-family: var(--display); font-size: 11px; font-weight: 800;
+    letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px;
+}
+.section-title { font-family: var(--display); font-size: 18px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-primary); }
+.meta-label { font-family: var(--display); font-size: 10px; font-weight: 800; letter-spacing: 2px; color: #0052FF; text-transform: uppercase; }
+.meta-value { font-size: 13px; color: var(--text-dim); line-height: 1.5; }

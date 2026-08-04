@@ -17,17 +17,16 @@ from Core.liveness.texture_analyzer import TextureAnalyzer
 from Core.utils.logger import get_logger
 
 logger = get_logger("AuthService")
-
 DEFAULT_SOCKET_PATH = "/tmp/facelock.sock"
 
 
 class AuthService:
     """Background socket server exposing FaceLock auth to PAM/OS modules."""
 
-    def __init__(self, socket_path: str = DEFAULT_SOCKET_PATH):
+    def __init__(self, socket_path: str = DEFAULT_SOCKET_PATH, settings: Optional[SystemSettings] = None):
         self.socket_path = socket_path
         self.config_loader = ConfigLoader()
-        self.settings: SystemSettings = self.config_loader.load()
+        self.settings: SystemSettings = settings or self.config_loader.load()
 
         self.storage = EncryptedSQLiteStorage(self.settings.db_path)
         self.detector = CascadeDetector()

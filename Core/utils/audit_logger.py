@@ -2,7 +2,7 @@
 
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -17,7 +17,6 @@ class AuditLogger:
         _audit_counter += 1
         self.log_path = log_path
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
-        # Use unique logger name to avoid handler conflicts across instances
         self._logger = logging.getLogger(f"FaceLock.Audit.{_audit_counter}")
         self._logger.propagate = False
         self._logger.handlers.clear()
@@ -33,9 +32,9 @@ class AuditLogger:
         success: bool = True,
         details: Optional[Dict[str, Any]] = None,
     ) -> None:
-        """Write a single structured audit event."""
+        """Write a single structured audit event with local device timestamp."""
         record = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now().astimezone().isoformat(),
             "event": event_type,
             "user_id": user_id,
             "success": success,

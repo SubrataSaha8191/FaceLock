@@ -12,13 +12,11 @@ Item {
         anchors.margins: 28
         spacing: 20
 
-        // Header
         Row {
             spacing: 12
-            Text { text: "◎"; color: Theme.primary; font.pixelSize: Theme.fontSizeHeader }
             Column {
                 Text { text: "Biometric Enrollment"; color: Theme.textPrimary; font.pixelSize: Theme.fontSizeHeader; font.bold: true }
-                Text { text: "Register a new face template for secure authentication"; color: Theme.textMuted; font.pixelSize: Theme.fontSizeSmall }
+                Text { text: "Register a new face template with encrypted zero-knowledge storage"; color: Theme.textSecondary; font.pixelSize: Theme.fontSizeSmall }
             }
         }
 
@@ -27,19 +25,17 @@ Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            // Form card
             GlowCard {
-                Layout.preferredWidth: 320
+                Layout.preferredWidth: 340
                 Layout.fillHeight: true
-                glowColor: Theme.primary
+                accentGlow: Theme.glassBorder
 
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 20
                     spacing: 14
 
-                    Text { text: "IDENTITY DETAILS"; color: Theme.textMuted; font.pixelSize: Theme.fontSizeXs; font.bold: true; font.letterSpacing: 1.0 }
-                    Rectangle { Layout.fillWidth: true; height: 1; color: Theme.surfaceBorder }
+                    Text { text: "IDENTITY CREDENTIALS"; color: Theme.textMuted; font.pixelSize: Theme.fontSizeXs; font.bold: true; font.letterSpacing: 1.0 }
 
                     Text { text: "User ID"; color: Theme.textSecondary; font.pixelSize: Theme.fontSizeSmall }
                     StyledTextField { id: userIdInput; placeholderText: "e.g. usr_101"; Layout.fillWidth: true }
@@ -47,15 +43,15 @@ Item {
                     Text { text: "Full Name"; color: Theme.textSecondary; font.pixelSize: Theme.fontSizeSmall }
                     StyledTextField { id: usernameInput; placeholderText: "e.g. Alice Smith"; Layout.fillWidth: true }
 
-                    Text { text: "Encryption Passphrase"; color: Theme.textSecondary; font.pixelSize: Theme.fontSizeSmall }
-                    StyledTextField { id: secretInput; echoMode: TextInput.Password; placeholderText: "Master secret key"; Layout.fillWidth: true }
+                    Text { text: "Secret Passphrase"; color: Theme.textSecondary; font.pixelSize: Theme.fontSizeSmall }
+                    StyledTextField { id: secretInput; echoMode: TextInput.Password; placeholderText: "Encryption key"; Layout.fillWidth: true }
 
                     Item { Layout.fillHeight: true }
 
                     PrimaryButton {
-                        text: "⬤  Enroll Face"
+                        text: "Enroll Identity"
                         Layout.fillWidth: true
-                        implicitHeight: 46
+                        implicitHeight: 44
                         onClicked: {
                             if (typeof facelockBridge !== "undefined") {
                                 facelockBridge.enrollUser(userIdInput.text, usernameInput.text, secretInput.text, "")
@@ -65,42 +61,32 @@ Item {
                 }
             }
 
-            // Camera preview card
             GlowCard {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                glowColor: Theme.success
+                accentGlow: Theme.accent
 
-                ColumnLayout {
+                Image {
+                    id: cameraPreview
                     anchors.fill: parent
-                    anchors.margins: 6
-                    spacing: 0
+                    anchors.margins: 8
+                    fillMode: Image.PreserveAspectFit
+                    source: "image://livecamera/frame"
+                    cache: false
 
-                    // Camera frame
-                    Image {
-                        id: cameraPreview
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        fillMode: Image.PreserveAspectFit
-                        source: "image://livecamera/frame"
-                        cache: false
-
-                        Connections {
-                            target: typeof facelockBridge !== "undefined" ? facelockBridge : null
-                            function onCameraFrameUpdated() {
-                                cameraPreview.source = "image://livecamera/frame?" + Math.random()
-                            }
+                    Connections {
+                        target: typeof facelockBridge !== "undefined" ? facelockBridge : null
+                        function onCameraFrameUpdated() {
+                            cameraPreview.source = "image://livecamera/frame?" + Math.random()
                         }
                     }
                 }
 
-                // Camera overlay badge
                 StatusBadge {
-                    text: "CAMERA PREVIEW"
-                    badgeColor: Theme.success
+                    text: "CAMERA STREAM"
                     anchors.top: parent.top
                     anchors.left: parent.left
-                    anchors.margins: 14
+                    anchors.margins: 16
                 }
             }
         }
