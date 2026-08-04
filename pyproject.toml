@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "facelock"
+version = "0.1.0"
+description = "Cross-platform biometric face authentication platform"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    { name = "FaceLock Development Team" }
+]
+dependencies = [
+    "numpy>=1.24.0",
+    "opencv-python>=4.8.0,<5.0.0",
+    "cryptography>=41.0.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0",
+    "PySide6>=6.5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "ruff>=0.1.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["Tests"]
+python_files = "test_*.py"
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "B", "I"]
