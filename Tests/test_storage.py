@@ -27,6 +27,12 @@ def test_sqlite_storage(tmp_path: Path):
     assert all_users[0][0] == user_id
     assert all_users[0][1] == username
 
+    # Update username
+    updated = storage.update_username(user_id, "Alice Updated")
+    assert updated is True
+    all_users_updated = storage.get_all_users()
+    assert all_users_updated[0][1] == "Alice Updated"
+
     # Delete
     deleted = storage.delete_user(user_id)
     assert deleted is True

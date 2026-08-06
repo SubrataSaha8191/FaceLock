@@ -78,6 +78,25 @@ class EncryptedSQLiteStorage(IDatabaseStorage):
             conn.commit()
             return cursor.rowcount > 0
 
+    def update_username(self, user_id: str, new_username: str) -> bool:
+        """Update enrolled user's username in database."""
+        return self.update_identity(user_id, user_id, new_username)
+
+    def update_identity(self, old_user_id: str, new_user_id: str, new_username: str) -> bool:
+        """Update enrolled user's ID and username in database."""
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                if old_user_id != new_user_id:
+                    cursor.execute("UPDATE password_hashes SET user_id = ? WHERE user_id = ?", (new_user_id, old_user_id))
+                    cursor.execute("UPDATE users SET user_id = ?, username = ? WHERE user_id = ?", (new_user_id, new_username, old_user_id))
+                else:
+                    cursor.execute("UPDATE users SET username = ? WHERE user_id = ?", (new_username, old_user_id))
+                conn.commit()
+                return cursor.rowcount > 0
+        except Exception:
+            return False
+
     def save_password_hash(self, user_id: str, password_hash: bytes) -> bool:
         """Store or update password hash for fallback authentication."""
         try:

@@ -28,6 +28,14 @@
 }
 .btn-spline-center:hover { transform: scale(1.06); background: #1EFC51; color: #0F172A; }
 
+.btn-icon-secondary {
+    background: rgba(59, 130, 246, 0.15); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.35);
+    border-radius: 50%; width: 34px; height: 34px; display: flex;
+    align-items: center; justify-content: center; cursor: pointer;
+    transition: all 200ms ease; flex-shrink: 0; outline: none; padding: 0;
+}
+.btn-icon-secondary:hover { background: #2563EB; color: #FFF; transform: scale(1.1); box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45); }
+
 /* Trash Icon Button for Deleting Users */
 .btn-icon-danger {
     background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.35);
@@ -94,3 +102,17 @@
 .log-status.ok { color: #10B981; font-weight: 700; }
 .log-status.fail { color: #EF4444; font-weight: 700; }
 .log-time { color: var(--text-dim); font-size: 12px; text-align: right; }
+
+/* Editorial Modal Backdrop & Card */
+.modal-backdrop {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center; z-index: 9999;
+}
+.modal-card {
+    background: #181818; border: 1px solid var(--border); border-radius: 24px;
+    width: 480px; max-width: 90vw; padding: 32px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85);
+    animation: modalPop 250ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+@keyframes modalPop { 0% { transform: scale(0.92); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }

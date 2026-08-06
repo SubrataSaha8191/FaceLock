@@ -81,6 +81,24 @@ const App = {
 
     stopCameraLoop() { if (this.cameraTimer) { clearInterval(this.cameraTimer); this.cameraTimer = null; } },
     async deleteUser(uid) { await Api.call('delete_user', uid); await this.renderPage(this.currentPage); },
+    openEditModal(uid, username) {
+        document.getElementById('edit-orig-userid').value = uid;
+        document.getElementById('edit-userid').value = uid;
+        document.getElementById('edit-username').value = username;
+        document.getElementById('edit-modal-backdrop').style.display = 'flex';
+    },
+    closeEditModal() { document.getElementById('edit-modal-backdrop').style.display = 'none'; },
+    async submitEditModal(e) {
+        e.preventDefault();
+        const origId = document.getElementById('edit-orig-userid').value;
+        const newId = document.getElementById('edit-userid').value.trim();
+        const newName = document.getElementById('edit-username').value.trim();
+        if (origId && newId && newName) {
+            await Api.call('update_user', origId, newId, newName);
+            this.closeEditModal();
+            await this.renderPage(this.currentPage);
+        }
+    },
 
     async handleEnroll(e) {
         e.preventDefault();

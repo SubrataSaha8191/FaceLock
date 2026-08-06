@@ -96,6 +96,31 @@
         <div id="page-container"></div>
     </main>
 
+    <!-- Editorial Edit Identity Modal Overlay -->
+    <div id="edit-modal-backdrop" class="modal-backdrop" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="section-title" style="margin:0;">EDIT ENROLLED IDENTITY</div>
+                <button class="close-btn" onclick="App.closeEditModal()">✕</button>
+            </div>
+            <form onsubmit="App.submitEditModal(event)">
+                <input type="hidden" id="edit-orig-userid">
+                <div class="form-group">
+                    <label class="form-label">USER ID</label>
+                    <input type="text" id="edit-userid" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">FULL NAME</label>
+                    <input type="text" id="edit-username" class="form-input" required>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+                    <button type="button" class="btn btn-secondary" onclick="App.closeEditModal()">CANCEL</button>
+                    <button type="submit" class="btn btn-accent">SAVE CHANGES</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="js/api.js"></script>
     <script src="js/pages.js"></script>

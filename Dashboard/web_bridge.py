@@ -99,6 +99,11 @@ class FaceLockWebBridge:
         ok = self.storage.delete_user(user_id)
         return {"ok": ok, "msg": f"'{user_id}' deleted" if ok else "Delete failed"}
 
+    def update_user(self, old_user_id: str, new_user_id: str, new_name: str) -> Dict:
+        """Update identity details (User ID and Full Name) in encrypted database."""
+        ok = self.storage.update_identity(old_user_id, new_user_id, new_name)
+        return {"ok": ok, "msg": f"Identity '{new_name}' updated successfully" if ok else "Update failed"}
+
     def toggle_camera(self, enable: bool) -> Dict:
         """Start or stop camera stream."""
         if enable:
