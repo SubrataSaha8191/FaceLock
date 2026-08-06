@@ -1,11 +1,13 @@
-"""Unit tests for FaceLock Background Authentication Service."""
+"""Unit tests for FaceLock Background Authentication Service & Biometric OS Gate."""
 
 import json
 import socket
 import threading
 import time
 from pathlib import Path
+from unittest.mock import patch, MagicMock
 
+import numpy as np
 from Core.config.settings import SystemSettings
 from Service.auth.auth_service import AuthService
 from Service.auth.service_client import ServiceClient
@@ -68,3 +70,17 @@ def test_service_client_connection_refused():
         assert False, "Should have raised"
     except (ConnectionRefusedError, FileNotFoundError):
         pass
+
+
+def test_service_authenticate_face(tmp_path):
+    service = _start_service_thread(tmp_path)
+    try:
+        client = ServiceClient(TEST_SOCKET, timeout=5.0)
+        with patch("cv2.VideoCapture") as mock_cap:
+            mock_inst = MagicMock()
+            mock_inst.read.return_value = (True, np.zeros((480, 640, 3), dtype=np.uint8))
+            mock_cap.return_value = mock_inst
+            result = client.authenticate_face("user_01", "MasterKey123")
+            assert isinstance(result, bool)
+    finally:
+        service.stop()

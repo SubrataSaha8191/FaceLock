@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
-"""PAM helper script for FaceLock biometric authentication.
+"""PAM helper script for FaceLock biometric & OS authentication.
 
-This script is invoked by the PAM stack via pam_exec.so.
-It connects to the FaceLock auth service socket and verifies
-the user via password fallback.
+Invoked by Linux PAM via pam_exec.so for sudo, GDM lock screen,
+LightDM, and Polkit application authorization gates.
 
 Exit codes:
-    0  — Authentication successful
-    1  — Authentication failed
-    2  — Service unavailable
+    0 — Authentication successful (PAM_SUCCESS)
+    1 — Authentication failed (PAM_AUTH_ERR)
+    2 — Service unavailable (Fallback to system auth)
 """
 
 import getpass
+import os
 import sys
 from pathlib import Path
 
-# Ensure project root is in python path
 project_root = Path(__file__).resolve().parent.parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
@@ -26,7 +25,7 @@ SOCKET_PATH = "/tmp/facelock.sock"
 
 
 def main() -> int:
-    """Execute PAM authentication flow."""
+    """Execute PAM biometric & OS authentication flow."""
     user = _get_pam_user()
     if not user:
         return 1
@@ -35,19 +34,21 @@ def main() -> int:
 
     try:
         if not client.check_enrolled(user):
-            # User not enrolled in FaceLock — skip (allow fallback to system auth)
+            # User not enrolled in FaceLock — skip (allow system auth fallback)
             return 0
 
+        # Attempt 1: Live Biometric Camera Face Verification
+        if client.authenticate_face(user):
+            return 0
+
+        # Attempt 2: Password Fallback
         password = _get_password()
-        if not password:
-            return 1
-
-        if client.verify_password(user, password):
+        if password and client.verify_password(user, password):
             return 0
+
         return 1
 
     except ConnectionRefusedError:
-        # Service not running — allow system fallback
         return 2
     except Exception:
         return 2
@@ -55,12 +56,11 @@ def main() -> int:
 
 def _get_pam_user() -> str:
     """Read PAM_USER from environment or fallback to current user."""
-    import os
     return os.environ.get("PAM_USER", getpass.getuser())
 
 
 def _get_password() -> str:
-    """Read password from stdin (piped by PAM)."""
+    """Read password from stdin if piped by PAM."""
     try:
         return sys.stdin.readline().strip()
     except EOFError:

@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+"""FaceLock Application & OS Authentication CLI Gate.
+
+Used to trigger face authentication for protected applications or
+verify enrolled user identity via terminal/desktop shortcuts.
+"""
+
+import argparse
+import sys
+from pathlib import Path
+
+project_root = Path(__file__).resolve().parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from Service.auth.service_client import ServiceClient
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="FaceLock OS & Application Biometric Gate")
+    parser.add_argument("--user", required=True, help="User ID to authenticate")
+    parser.add_argument("--secret", default="MasterKey123", help="Master encryption secret key")
+    args = parser.parse_args()
+
+    client = ServiceClient()
+    print(f"🔒 FaceLock Biometric Gate — Verifying '{args.user}'...")
+
+    try:
+        if not client.check_enrolled(args.user):
+            print(f"❌ User '{args.user}' is not enrolled in FaceLock database.")
+            return 1
+
+        print("📷 Accessing camera & performing anti-spoof liveness check...")
+        if client.authenticate_face(args.user, args.secret):
+            print("✅ BIOMETRIC MATCH VERIFIED — Access Granted!")
+            return 0
+        else:
+            print("❌ ACCESS DENIED — Biometric face mismatch or liveness check failed.")
+            return 1
+    except ConnectionRefusedError:
+        print("⚠️ FaceLock daemon service is offline (~/.facelock/facelock.sock).")
+        return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())

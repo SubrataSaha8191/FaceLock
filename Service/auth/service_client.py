@@ -43,3 +43,13 @@ class ServiceClient:
             "user_id": user_id,
         })
         return resp.get("result", False)
+
+    def authenticate_face(self, user_id: str, secret: str = "MasterKey123") -> bool:
+        """Authenticate user via live biometric camera frame."""
+        resp = self.send_request({
+            "action": "authenticate_face",
+            "user_id": user_id,
+            "secret": secret,
+        })
+        return resp.get("result", False)
+

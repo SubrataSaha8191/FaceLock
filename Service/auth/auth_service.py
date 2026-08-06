@@ -89,6 +89,17 @@ class AuthService:
             msg = "Password verified" if ok else "Password rejected"
             return {"result": ok, "message": msg}
 
+        if action == "authenticate_face":
+            secret = request.get("secret", "MasterKey123")
+            import cv2
+            cap = cv2.VideoCapture(0)
+            ret, frame = cap.read()
+            cap.release()
+            if not ret or frame is None:
+                return {"result": False, "message": "Camera frame capture failed"}
+            ok, sim = self.engine.authenticate_user(user_id, secret, frame)
+            return {"result": ok, "similarity": round(float(sim), 4), "message": "Face match verified" if ok else "Face auth failed"}
+
         if action == "check_enrolled":
             users = [u[0] for u in self.storage.get_all_users()]
             return {"result": user_id in users, "message": "enrollment_check"}
