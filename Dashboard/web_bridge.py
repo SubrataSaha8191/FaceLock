@@ -16,6 +16,7 @@ from Core.recognition.feature_extractor import FeatureExtractor
 from Core.storage.encrypted_sqlite_storage import EncryptedSQLiteStorage
 from Core.authentication.auth_engine import AuthenticationEngine
 from Core.liveness.texture_analyzer import TextureAnalyzer
+from Core.utils.audit_logger import AuditLogger
 
 
 class FaceLockWebBridge:
@@ -30,6 +31,7 @@ class FaceLockWebBridge:
         self.detector = CascadeDetector()
         self.extractor = FeatureExtractor()
         self.liveness = TextureAnalyzer(self.settings.liveness.texture_threshold)
+        self.audit = AuditLogger(self.settings.audit_log_path)
 
         self.engine = AuthenticationEngine(
             self.settings, self.detector, self.extractor,
@@ -97,12 +99,27 @@ class FaceLockWebBridge:
     def delete_user(self, user_id: str) -> Dict:
         """Remove identity from encrypted store."""
         ok = self.storage.delete_user(user_id)
+        if ok:
+            self.audit.log_event("IDENTITY_DELETED", user_id=user_id, success=True)
         return {"ok": ok, "msg": f"'{user_id}' deleted" if ok else "Delete failed"}
 
     def update_user(self, old_user_id: str, new_user_id: str, new_name: str) -> Dict:
         """Update identity details (User ID and Full Name) in encrypted database."""
         ok = self.storage.update_identity(old_user_id, new_user_id, new_name)
+        if ok:
+            self.audit.log_event("IDENTITY_UPDATED", user_id=new_user_id, success=True)
         return {"ok": ok, "msg": f"Identity '{new_name}' updated successfully" if ok else "Update failed"}
+
+    def clear_logs(self) -> Dict:
+        """Clear security audit log history."""
+        try:
+            log_file = Path(self.settings.audit_log_path)
+            if log_file.exists():
+                with open(log_file, "w", encoding="utf-8") as f:
+                    f.truncate(0)
+            return {"ok": True, "msg": "Logs cleared"}
+        except Exception as e:
+            return {"ok": False, "msg": str(e)}
 
     def toggle_camera(self, enable: bool) -> Dict:
         """Start or stop camera stream."""

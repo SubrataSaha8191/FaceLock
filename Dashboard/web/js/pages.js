@@ -125,6 +125,7 @@ const Pages = {
                 <div class="gsap-hidden">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
                         <div><span class="section-title">SECURITY AUDIT LOGS</span><div class="meta-value" style="margin-top:4px;">Total Events Recorded: <strong>${total}</strong> | Authentications: <strong>${okCount} OK</strong></div></div>
+                        <button class="btn btn-secondary" style="font-size:12px; padding:8px 16px;" onclick="App.clearLogs()">CLEAR HISTORY</button>
                     </div>
                     <div>
                         ${logs.length === 0 ? '<div class="empty-state">No audit log records found in SQLite database.</div>' : ''}

@@ -99,6 +99,12 @@ const App = {
             await this.renderPage(this.currentPage);
         }
     },
+    async clearLogs() {
+        if (confirm('Are you sure you want to clear all security audit logs?')) {
+            await Api.call('clear_logs');
+            await this.renderPage(this.currentPage);
+        }
+    },
 
     async handleEnroll(e) {
         e.preventDefault();
