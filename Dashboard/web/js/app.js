@@ -105,6 +105,23 @@ const App = {
             await this.renderPage(this.currentPage);
         }
     },
+    openAddAppModal() { document.getElementById('app-modal-backdrop').style.display = 'flex'; },
+    closeAddAppModal() { document.getElementById('app-modal-backdrop').style.display = 'none'; },
+    async submitAddAppModal(e) {
+        e.preventDefault();
+        const name = document.getElementById('app-name').value.trim();
+        const cmd = document.getElementById('app-cmd').value.trim();
+        const icon = document.getElementById('app-icon').value;
+        if (name && cmd) {
+            await Api.call('add_protected_app', name, cmd, icon);
+            this.closeAddAppModal();
+            await this.renderPage(this.currentPage);
+        }
+    },
+    async removeApp(appId) {
+        await Api.call('remove_protected_app', appId);
+        await this.renderPage(this.currentPage);
+    },
 
     async handleEnroll(e) {
         e.preventDefault();

@@ -3,6 +3,8 @@
 import base64
 import json
 import os
+import sys
+import subprocess
 import cv2
 import numpy as np
 from pathlib import Path
@@ -18,43 +20,30 @@ from Core.authentication.auth_engine import AuthenticationEngine
 from Core.liveness.texture_analyzer import TextureAnalyzer
 from Core.utils.audit_logger import AuditLogger
 
-
 class FaceLockWebBridge:
-    """API object exposed to pywebview JS frontend via `window.pywebview.api`."""
-
     def __init__(self):
         self.config_loader = ConfigLoader()
         self.settings: SystemSettings = self.config_loader.load()
-
         self.storage = EncryptedSQLiteStorage(self.settings.db_path)
         self.camera = OpenCVCamera(self.settings.camera)
         self.detector = CascadeDetector()
         self.extractor = FeatureExtractor()
         self.liveness = TextureAnalyzer(self.settings.liveness.texture_threshold)
         self.audit = AuditLogger(self.settings.audit_log_path)
-
-        self.engine = AuthenticationEngine(
-            self.settings, self.detector, self.extractor,
-            self.storage, self.liveness,
-        )
+        self.engine = AuthenticationEngine(self.settings, self.detector, self.extractor, self.storage, self.liveness)
         self._camera_active = False
 
     def get_users(self) -> List[Dict[str, Any]]:
-        """Return enrolled user list."""
-        users = self.storage.get_all_users()
-        return [{"userId": u[0], "username": u[1]} for u in users]
+        return [{"userId": u[0], "username": u[1]} for u in self.storage.get_all_users()]
 
     def get_metrics(self) -> Dict[str, Any]:
-        """Return system metrics summary."""
-        users_count = len(self.storage.get_all_users())
-        socket_path = self.settings.data_dir / "facelock.sock"
         return {
-            "registeredUsersCount": users_count,
+            "registeredUsersCount": len(self.storage.get_all_users()),
             "cameraActive": self._camera_active,
             "livenessEnabled": self.settings.security.liveness_required,
             "matchingThreshold": self.settings.security.matching_threshold,
             "daemonActive": True,
-            "socketPath": str(socket_path),
+            "socketPath": str(self.settings.data_dir / "facelock.sock"),
         }
 
     def save_settings(self, matching_threshold: float, liveness_enabled: bool) -> Dict[str, Any]:
@@ -121,8 +110,33 @@ class FaceLockWebBridge:
         except Exception as e:
             return {"ok": False, "msg": str(e)}
 
+    def get_protected_apps(self) -> List[Dict[str, Any]]:
+        return getattr(self.settings, "protected_apps", [])
+
+    def add_protected_app(self, name: str, cmd: str, icon: str) -> Dict[str, Any]:
+        apps = list(self.get_protected_apps())
+        apps.append({"id": f"app_{len(apps) + 1}", "name": name, "cmd": cmd, "icon": icon or "app"})
+        self.settings.protected_apps = apps
+        self.config_loader.save(self.settings)
+        return {"ok": True, "msg": f"App '{name}' protected"}
+
+    def remove_protected_app(self, app_id: str) -> Dict[str, Any]:
+        apps = [a for a in self.get_protected_apps() if a.get("id") != app_id]
+        self.settings.protected_apps = apps
+        self.config_loader.save(self.settings)
+        return {"ok": True, "msg": "App protection removed"}
+
+    def launch_protected_app(self, app_id: str) -> Dict[str, Any]:
+        """Real-time launch target protected app using facelock-app-gate."""
+        apps = {a.get("id"): a for a in self.get_protected_apps()}
+        if app_id not in apps:
+            return {"ok": False, "msg": "App not found"}
+        app = apps[app_id]
+        gate_path = Path(__file__).resolve().parent.parent / "Linux" / "bin" / "facelock-app-gate"
+        subprocess.Popen([sys.executable, str(gate_path), "--cmd", app["cmd"]])
+        return {"ok": True, "msg": f"Real-time gate engaged for '{app['name']}'"}
+
     def toggle_camera(self, enable: bool) -> Dict:
-        """Start or stop camera stream."""
         if enable:
             ok = self.camera.open()
             self._camera_active = ok
@@ -132,12 +146,10 @@ class FaceLockWebBridge:
         return {"ok": True}
 
     def get_camera_frame(self) -> str:
-        """Capture one frame and return base64 JPEG data URI."""
         if not self.camera.is_opened():
             return ""
         ret, frame = self.camera.read_frame()
         if not ret or frame is None:
             return ""
         _, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
-        b64 = base64.b64encode(buf).decode("ascii")
-        return f"data:image/jpeg;base64,{b64}"
+        return f"data:image/jpeg;base64,{base64.b64encode(buf).decode('ascii')}"

@@ -1,9 +1,16 @@
 /**
  * Dynamic Page Templates — Dynamic Canvas Structured Telemetry & Layout
  */
+const appIcons = {
+    terminal: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>`,
+    browser: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+    settings: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+    app: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>`
+};
+
 const Pages = {
     async overview() {
-        const m = await Api.call('get_metrics'), users = await Api.call('get_users');
+        const m = await Api.call('get_metrics'), users = await Api.call('get_users'), apps = await Api.call('get_protected_apps') || [];
         const count = users ? users.length : (m.registeredUsersCount || 0), thresh = (m.matchingThreshold * 100).toFixed(0);
         return `
             <div class="page-enter overview-structured-grid">
@@ -39,7 +46,17 @@ const Pages = {
                         <div class="sys-row"><div><span class="sys-dot"></span><span>Haar Cascade Detector</span></div><strong>OK</strong></div>
                         <div class="sys-row"><div><span class="sys-dot"></span><span>PAM Listener Socket</span></div><strong>ONLINE</strong></div>
                         <div class="sys-row"><div><span class="sys-dot"></span><span>AES-256 Storage Gate</span></div><strong>ENCRYPTED</strong></div>
-                        <div style="margin-top:24px; padding-top:20px; border-top:1px solid var(--border);"><div class="hero-label">DAEMON SOCKET IPC</div><div class="meta-value" style="margin-top:6px;">Unix Domain Socket active at <code>~/.facelock/facelock.sock</code></div></div>
+                        <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;"><div class="hero-label" style="margin:0;">PROTECTED APPLICATIONS</div><button class="btn btn-secondary" style="font-size:10px; padding:4px 10px;" onclick="App.openAddAppModal()">+ ADD APP</button></div>
+                            <div style="display:flex; flex-direction:column; gap:8px; max-height:165px; overflow-y:auto; padding-right:4px;">
+                                ${apps.length === 0 ? '<div class="meta-value">No custom applications protected yet.</div>' : apps.map(a => `
+                                    <div style="display:flex; align-items:center; justify-content:space-between; background:#181818; border:1px solid var(--border); border-radius:10px; padding:8px 12px;">
+                                        <div style="display:flex; align-items:center; gap:10px;"><div style="color:#2563EB; display:flex; align-items:center;">${appIcons[a.icon] || appIcons.app}</div><div><div style="font-size:13px; font-weight:600; color:var(--text-primary);">${a.name}</div><div style="font-size:10px; color:var(--text-dim); font-family:monospace;">${a.cmd}</div></div></div>
+                                        <div style="display:flex; align-items:center; gap:8px;"><span style="font-size:9px; background:rgba(37,99,235,0.2); color:#60A5FA; padding:2px 6px; border-radius:4px; font-weight:700;">LOCKED</span><button class="btn-icon-danger" style="width:22px; height:22px;" title="Remove App Protection" onclick="App.removeApp('${a.id}')"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>`;
@@ -76,18 +93,8 @@ const Pages = {
         return `
             <div class="page-enter" style="width:100%; height:100%;">
                 <div style="display:grid; grid-template-columns: 1fr 340px; gap:40px; align-items:stretch; height:100%;">
-                    <div class="gsap-hidden" style="display:flex; flex-direction:column; gap:12px; height:100%;">
-                        <div style="display:flex; align-items:center; justify-content:space-between;"><span class="section-title">PERCEPTION CAMERA FEED</span><span class="status-pill"><span class="pulse-dot"></span>30 FPS REAL-TIME</span></div>
-                        <img id="camera-stream" class="camera-feed-lg" alt="Camera" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'><rect fill='%230F172A'/></svg>">
-                    </div>
-                    <div class="gsap-hidden">
-                        <div class="section-title" style="margin-bottom:16px;">LIVE TELEMETRY</div>
-                        <div class="sys-row"><span>Frame Resolution</span><strong>640 x 480 px</strong></div>
-                        <div class="sys-row"><span>Cascade Engine</span><strong>OpenCV Haar</strong></div>
-                        <div class="sys-row"><span>Liveness Analyzer</span><strong>LBP Texture Gate</strong></div>
-                        <div class="sys-row"><span>Matching Model</span><strong>128D Cosine Sim</strong></div>
-                        <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border);"><div class="hero-label">IPC SOCKET DAEMON</div><div class="meta-value">Unix Domain Socket listener active at <code>~/.facelock/facelock.sock</code> for Linux PAM login.</div></div>
-                    </div>
+                    <div class="gsap-hidden" style="display:flex; flex-direction:column; gap:12px; height:100%;"><div style="display:flex; align-items:center; justify-content:space-between;"><span class="section-title">PERCEPTION CAMERA FEED</span><span class="status-pill"><span class="pulse-dot"></span>30 FPS REAL-TIME</span></div><img id="camera-stream" class="camera-feed-lg" alt="Camera" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'><rect fill='%230F172A'/></svg>"></div>
+                    <div class="gsap-hidden"><div class="section-title" style="margin-bottom:16px;">LIVE TELEMETRY</div><div class="sys-row"><span>Frame Resolution</span><strong>640 x 480 px</strong></div><div class="sys-row"><span>Cascade Engine</span><strong>OpenCV Haar</strong></div><div class="sys-row"><span>Liveness Analyzer</span><strong>LBP Texture Gate</strong></div><div class="sys-row"><span>Matching Model</span><strong>128D Cosine Sim</strong></div><div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border);"><div class="hero-label">IPC SOCKET DAEMON</div><div class="meta-value">Unix Domain Socket listener active at <code>~/.facelock/facelock.sock</code> for Linux PAM login.</div></div></div>
                 </div>
             </div>`;
     },
@@ -97,22 +104,8 @@ const Pages = {
         return `
             <div class="page-enter" style="max-width:1150px; margin:0 auto; padding-bottom:40px;">
                 <div style="display:grid; grid-template-columns: 1fr 380px; gap:44px; align-items:start;">
-                    <div class="gsap-hidden">
-                        <div class="section-title" style="margin-bottom:12px;">SECURITY CONFIGURATION</div>
-                        <p class="meta-value" style="margin-bottom:24px;">Adjust system sensitivity and anti-spoof protection thresholds for Linux PAM login verification.</p>
-                        <form onsubmit="App.handleSaveSettings(event)">
-                            <div class="setting-row"><div><div class="setting-label">COSINE THRESHOLD</div><div class="setting-desc">Minimum vector similarity required to match face</div></div><div style="display:flex;align-items:center;gap:14px;"><input type="range" id="setting-threshold" min="40" max="95" value="${t}" oninput="document.getElementById('thresh-val').textContent=this.value+'%'"><span id="thresh-val" class="hero-number" style="font-size:24px;">${t}%</span></div></div>
-                            <div class="setting-row"><div><div class="setting-label">ANTI-SPOOF LIVENESS</div><div class="setting-desc">Reject photos, screens, & texture spoofs</div></div><input type="checkbox" id="setting-liveness" ${m.livenessEnabled?'checked':''} style="width:20px;height:20px;accent-color:#2563EB;"></div>
-                            <div style="margin-top:28px;display:flex;align-items:center;justify-content:space-between;"><span id="settings-msg" class="meta-value"></span><button type="submit" class="btn btn-accent">SAVE CONFIG</button></div>
-                        </form>
-                    </div>
-                    <div class="gsap-hidden">
-                        <div class="section-title" style="margin-bottom:12px;">WHAT IS COSINE THRESHOLD?</div>
-                        <div class="meta-value" style="margin-bottom:16px;">It sets the mathematical similarity cutoff score (40%-95%) for comparing two 128D facial feature vectors. Higher values increase strictness against false matches.</div>
-                        <div class="sys-row"><span>Key Derivation</span><strong>PBKDF2 (100k)</strong></div>
-                        <div class="sys-row"><span>Vector Storage</span><strong>AES-256-GCM</strong></div>
-                        <div class="sys-row"><span>Max Auth Lockout</span><strong>3 Failures</strong></div>
-                    </div>
+                    <div class="gsap-hidden"><div class="section-title" style="margin-bottom:12px;">SECURITY CONFIGURATION</div><p class="meta-value" style="margin-bottom:24px;">Adjust system sensitivity and anti-spoof protection thresholds for Linux PAM login verification.</p><form onsubmit="App.handleSaveSettings(event)"><div class="setting-row"><div><div class="setting-label">COSINE THRESHOLD</div><div class="setting-desc">Minimum vector similarity required to match face</div></div><div style="display:flex;align-items:center;gap:14px;"><input type="range" id="setting-threshold" min="40" max="95" value="${t}" oninput="document.getElementById('thresh-val').textContent=this.value+'%'"><span id="thresh-val" class="hero-number" style="font-size:24px;">${t}%</span></div></div><div class="setting-row"><div><div class="setting-label">ANTI-SPOOF LIVENESS</div><div class="setting-desc">Reject photos, screens, & texture spoofs</div></div><input type="checkbox" id="setting-liveness" ${m.livenessEnabled?'checked':''} style="width:20px;height:20px;accent-color:#2563EB;"></div><div style="margin-top:28px;display:flex;align-items:center;justify-content:space-between;"><span id="settings-msg" class="meta-value"></span><button type="submit" class="btn btn-accent">SAVE CONFIG</button></div></form></div>
+                    <div class="gsap-hidden"><div class="section-title" style="margin-bottom:12px;">WHAT IS COSINE THRESHOLD?</div><div class="meta-value" style="margin-bottom:16px;">It sets the mathematical similarity cutoff score (40%-95%) for comparing two 128D facial feature vectors. Higher values increase strictness against false matches.</div><div class="sys-row"><span>Key Derivation</span><strong>PBKDF2 (100k)</strong></div><div class="sys-row"><span>Vector Storage</span><strong>AES-256-GCM</strong></div><div class="sys-row"><span>Max Auth Lockout</span><strong>3 Failures</strong></div></div>
                 </div>
             </div>`;
     },

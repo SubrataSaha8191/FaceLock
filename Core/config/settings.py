@@ -54,6 +54,11 @@ class SystemSettings(BaseModel):
     camera: CameraSettings = Field(default_factory=CameraSettings)
     security: SecuritySettings = Field(default_factory=SecuritySettings)
     liveness: LivenessSettings = Field(default_factory=LivenessSettings)
+    protected_apps: list = Field(default_factory=lambda: [
+        {"id": "app_1", "name": "Terminal (sudo)", "cmd": "sudo", "icon": "terminal"},
+        {"id": "app_2", "name": "Google Chrome", "cmd": "google-chrome", "icon": "browser"},
+        {"id": "app_3", "name": "System Settings", "cmd": "gnome-control-center", "icon": "settings"}
+    ])
 
     @property
     def db_path(self) -> Path:

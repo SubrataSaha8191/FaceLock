@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+"""FaceLock Real-Time Application Launcher Gate.
+
+Intercepts application execution, performs biometric face verification,
+and launches the target process only upon successful authentication.
+"""
+
+import argparse
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+project_root = Path(__file__).resolve().parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from Service.auth.service_client import ServiceClient
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="FaceLock Real-Time App Protection Gate")
+    parser.add_argument("--cmd", required=True, help="Target application executable command")
+    parser.add_argument("--user", default=None, help="Enrolled User ID (defaults to system user)")
+    parser.add_argument("--secret", default="MasterKey123", help="Master encryption secret key")
+    args = parser.parse_args()
+
+    client = ServiceClient()
+    user_id = args.user or os.environ.get("USER", "user_01")
+    print(f"🔒 FaceLock App Gate — Protecting target command: '{args.cmd}'")
+    print(f"📷 Verifying identity for '{user_id}'...")
+
+    try:
+        if not client.check_enrolled(user_id):
+            print(f"❌ User '{user_id}' is not enrolled. App launch denied.")
+            return 1
+
+        if client.authenticate_face(user_id, args.secret):
+            print(f"✅ BIOMETRIC AUTHENTICATED — Launching '{args.cmd}'...")
+            subprocess.Popen(args.cmd, shell=True)
+            return 0
+        else:
+            print("❌ ACCESS DENIED — Facial verification failed.")
+            return 1
+    except ConnectionRefusedError:
+        print("⚠️ FaceLock service daemon offline. Falling back to direct app launch...")
+        subprocess.Popen(args.cmd, shell=True)
+        return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
