@@ -4,8 +4,8 @@
 @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes dash { to { stroke-dashoffset: -1000; } }
 
-/* Hypnotic ring rotation */
-.ring-group { animation: spin-slow 120s linear infinite; transform-origin: center center; }
+/* Spotify Wrapped Hypnotic Ring Slow Rotation */
+.ring-group { animation: spin-slow 180s linear infinite; transform-origin: center center; }
 
 /* Flowing line dash animation */
 .flow-path { stroke-dasharray: 20 30; animation: dash 8s linear infinite; }

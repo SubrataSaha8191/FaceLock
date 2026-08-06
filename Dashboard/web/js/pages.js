@@ -1,56 +1,42 @@
 /**
- * Dynamic Page Templates — Dynamic Canvas Spatial Telemetry & Layout
+ * Dynamic Page Templates — Dynamic Canvas Structured Telemetry & Layout
  */
 const Pages = {
     async overview() {
         const m = await Api.call('get_metrics'), users = await Api.call('get_users');
         const count = users ? users.length : (m.registeredUsersCount || 0), thresh = (m.matchingThreshold * 100).toFixed(0);
         return `
-            <div class="page-enter overview-spatial-grid">
-                <div class="spatial-left">
-                    <div class="stat-pos-card gsap-hidden">
-                        <div class="hero-label">ANTI-SPOOF LIVENESS</div>
-                        <div class="hero-number" style="font-size:32px; background:var(--orange-grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${m.livenessEnabled ? 'ACTIVE' : 'OFF'}</div>
-                        <div class="meta-value" style="margin-top:6px;">LBP Texture & Blink Gate</div>
-                    </div>
+            <div class="page-enter overview-structured-grid">
+                <div class="metrics-top-bar gsap-hidden">
+                    <div class="metric-block"><div class="hero-label">ANTI-SPOOF LIVENESS</div><div class="hero-number" style="font-size:36px; background:var(--orange-grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${m.livenessEnabled ? 'ACTIVE' : 'OFF'}</div><div class="meta-value">LBP Texture & Blink Gate</div></div>
+                    <div class="metric-block"><div class="hero-label">CAMERA PIPELINE</div><div class="hero-number" style="font-size:36px;">${m.cameraActive ? 'LIVE' : 'IDLE'}</div><div class="meta-value">OpenCV Video Frame Loop</div></div>
+                    <div class="metric-block"><div class="hero-label">COSINE THRESHOLD</div><div class="hero-number" style="font-size:36px;">${thresh}%</div><div class="meta-value">Identity Match Score Cutoff</div></div>
+                    <div class="metric-block"><div class="hero-label">PAM SECURITY GATE</div><div class="hero-number" style="font-size:36px; color:#10B981;">ONLINE</div><div class="meta-value">Linux Auth Listener Active</div></div>
                 </div>
-                <div class="spatial-center gsap-hidden">
-                    <div class="hero-label" style="font-size:12px; letter-spacing:3px;">ENROLLED IDENTITIES (${count})</div>
-                    ${users.length === 0 ? `
-                        <div style="margin-top:24px;">
-                            <button class="btn btn-spline-center" onclick="App.navigateTo('enrollment')">+ ENROLL NEW IDENTITY</button>
-                            <p class="subtext-hero">Zero identities enrolled. Register a 128D face template to enable high-speed Unix PAM biometric authentication.</p>
-                        </div>
-                    ` : `
-                        <div style="margin-top:20px; width:100%; display:flex; flex-direction:column; align-items:center;">
-                            ${users.map(u => `
-                                <div class="user-row">
-                                    <div class="user-avatar">${u.username.substring(0,2).toUpperCase()}</div>
-                                    <div class="user-info"><div class="user-name">${u.username}</div><div class="user-id">ID: ${u.userId}</div></div>
-                                    <span class="user-tag">128D VECTOR</span>
-                                    <button class="btn-icon-danger" title="Remove User" onclick="App.deleteUser('${u.userId}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <p class="subtext-hero" style="font-size:12px; margin-top:12px;">FaceLock bio-encryption active. Ready for Linux PAM unlock.</p>
-                    `}
-                </div>
-                <div class="spatial-right">
-                    <div class="stat-pos-card gsap-hidden">
-                        <div class="hero-label">CAMERA PIPELINE</div>
-                        <div class="hero-number" style="font-size:36px;">${m.cameraActive ? 'LIVE' : 'IDLE'}</div>
-                        <div class="meta-value" style="margin-top:6px;">OpenCV Video Frame Loop</div>
+                <div class="main-workspace-row">
+                    <div class="workspace-main-panel gsap-hidden">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;"><div class="hero-label" style="font-size:12px; letter-spacing:2.5px; margin:0;">ENROLLED IDENTITIES (${count})</div></div>
+                        ${users.length === 0 ? `<div style="padding:24px 0;"><button class="btn btn-spline-center" onclick="App.navigateTo('enrollment')">+ ENROLL NEW IDENTITY</button><p class="subtext-hero">Zero identities enrolled. Register a 128D face template for Unix PAM biometric authentication.</p></div>` : `
+                            <div class="user-list-container">
+                                ${users.map(u => `
+                                    <div class="user-row" style="max-width:100%;">
+                                        <div class="user-avatar">${u.username.substring(0,2).toUpperCase()}</div>
+                                        <div class="user-info"><div class="user-name">${u.username}</div><div class="user-id">ID: ${u.userId}</div></div>
+                                        <span class="user-tag">128D VECTOR</span>
+                                        <button class="btn-icon-danger" title="Remove User" onclick="App.deleteUser('${u.userId}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <p class="subtext-hero" style="font-size:12px; margin-top:16px;">FaceLock bio-encryption active. Ready for Linux PAM unlock.</p>
+                        `}
                     </div>
-                    <div class="stat-pos-card gsap-hidden" style="margin: 20px 0;">
-                        <div class="hero-label" style="margin-bottom:12px;">SYSTEM DIAGNOSTICS</div>
+                    <div class="workspace-side-panel gsap-hidden">
+                        <div class="hero-label" style="margin-bottom:16px;">SYSTEM DIAGNOSTICS</div>
                         <div class="sys-row"><div><span class="sys-dot"></span><span>OpenCV Frame Pipeline</span></div><strong>${m.cameraActive?'ACTIVE':'READY'}</strong></div>
                         <div class="sys-row"><div><span class="sys-dot"></span><span>Haar Cascade Detector</span></div><strong>OK</strong></div>
                         <div class="sys-row"><div><span class="sys-dot"></span><span>PAM Listener Socket</span></div><strong>ONLINE</strong></div>
-                    </div>
-                    <div class="stat-pos-card gsap-hidden">
-                        <div class="hero-label">COSINE THRESHOLD</div>
-                        <div class="hero-number" style="font-size:42px;">${thresh}%</div>
-                        <div class="meta-value" style="margin-top:6px;">Identity Match Score Cutoff</div>
+                        <div class="sys-row"><div><span class="sys-dot"></span><span>AES-256 Storage Gate</span></div><strong>ENCRYPTED</strong></div>
+                        <div style="margin-top:24px; padding-top:20px; border-top:1px solid var(--border);"><div class="hero-label">DAEMON SOCKET IPC</div><div class="meta-value" style="margin-top:6px;">Unix Domain Socket active at <code>~/.facelock/facelock.sock</code></div></div>
                     </div>
                 </div>
             </div>`;
@@ -58,8 +44,8 @@ const Pages = {
 
     async enrollment() {
         return `
-            <div class="page-enter" style="width:100%; padding-bottom:20px;">
-                <div style="display:grid; grid-template-columns: 340px 1fr; gap:36px; align-items:start;">
+            <div class="page-enter" style="width:100%; height:100%;">
+                <div style="display:grid; grid-template-columns: 340px 1fr; gap:36px; align-items:stretch; height:100%;">
                     <div class="gsap-hidden">
                         <div class="section-title" style="margin-bottom:20px;">BIOMETRIC CREDENTIALS</div>
                         <form onsubmit="App.handleEnroll(event)">
@@ -75,7 +61,7 @@ const Pages = {
                             <div class="sys-row"><div><span class="sys-dot"></span><span>Ensure bright ambient light</span></div></div>
                         </div>
                     </div>
-                    <div class="gsap-hidden" style="display:flex; flex-direction:column; gap:12px;">
+                    <div class="gsap-hidden" style="display:flex; flex-direction:column; gap:12px; height:100%;">
                         <div style="display:flex; align-items:center; justify-content:space-between;"><span class="section-title">HIGH-RESOLUTION VIEWPORT</span><span class="status-pill"><span class="pulse-dot"></span>RAW CAMERA STREAM</span></div>
                         <img id="camera-stream" class="camera-feed-lg" alt="Camera" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'><rect fill='%230F172A'/></svg>">
                     </div>
@@ -85,9 +71,9 @@ const Pages = {
 
     async perception() {
         return `
-            <div class="page-enter" style="width:100%; padding-bottom:20px;">
-                <div style="display:grid; grid-template-columns: 1fr 340px; gap:40px; align-items:start;">
-                    <div class="gsap-hidden" style="display:flex; flex-direction:column; gap:12px;">
+            <div class="page-enter" style="width:100%; height:100%;">
+                <div style="display:grid; grid-template-columns: 1fr 340px; gap:40px; align-items:stretch; height:100%;">
+                    <div class="gsap-hidden" style="display:flex; flex-direction:column; gap:12px; height:100%;">
                         <div style="display:flex; align-items:center; justify-content:space-between;"><span class="section-title">PERCEPTION CAMERA FEED</span><span class="status-pill"><span class="pulse-dot"></span>30 FPS REAL-TIME</span></div>
                         <img id="camera-stream" class="camera-feed-lg" alt="Camera" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='640' height='480'><rect fill='%230F172A'/></svg>">
                     </div>

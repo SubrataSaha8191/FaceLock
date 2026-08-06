@@ -1,15 +1,15 @@
-/* ═══ Plain White Canvas Design System ═══ */
+/* ═══ Plain Canvas Design System — Dark Mode #212121 ═══ */
 :root {
-    --bg: #FFFFFF;
-    --canvas-card: #FFFFFF;
-    --text-primary: #0F172A;
-    --text-dim: #475569;
-    --text-ghost: #94A3B8;
-    --border: #E2E8F0;
+    --bg: #212121;
+    --canvas-card: #212121;
+    --text-primary: #F8FAFC;
+    --text-dim: #94A3B8;
+    --text-ghost: #64748B;
+    --border: rgba(255, 255, 255, 0.12);
     
     /* Vibrant Accent Gradients for Text & Buttons */
-    --blue-grad: linear-gradient(135deg, #0052FF 0%, #3B82F6 100%);
-    --orange-grad: linear-gradient(135deg, #FF3800 0%, #FF7000 100%);
+    --blue-grad: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+    --orange-grad: linear-gradient(135deg, #FF5722 0%, #FF7000 100%);
     --green-accent: #10B981;
     --green-bright: #1EFC51;
     
@@ -21,15 +21,15 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
-    height: 100%; background: #FFFFFF; color: var(--text-primary);
+    height: 100%; background: #212121; color: var(--text-primary);
     font-family: var(--font); font-size: 14px; line-height: 1.5;
     -webkit-font-smoothing: antialiased; overflow: hidden;
 }
-body { display: flex; position: relative; background: #FFFFFF; }
+body { display: flex; position: relative; background: #212121; }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
 
 /* Bold Spline Editorial Typography */
 .hero-number {
@@ -43,5 +43,5 @@ body { display: flex; position: relative; background: #FFFFFF; }
     letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px;
 }
 .section-title { font-family: var(--display); font-size: 18px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-primary); }
-.meta-label { font-family: var(--display); font-size: 10px; font-weight: 800; letter-spacing: 2px; color: #0052FF; text-transform: uppercase; }
+.meta-label { font-family: var(--display); font-size: 10px; font-weight: 800; letter-spacing: 2px; color: #60A5FA; text-transform: uppercase; }
 .meta-value { font-size: 13px; color: var(--text-dim); line-height: 1.5; }

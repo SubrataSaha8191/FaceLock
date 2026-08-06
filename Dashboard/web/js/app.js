@@ -50,7 +50,8 @@ const App = {
         document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.page === page));
         this.currentPage = page;
         const titles = { overview:'OVERVIEW', enrollment:'ENROLLMENT', perception:'PERCEPTION', settings:'CONFIGURATION', logs:'SECURITY LOGS' };
-        document.getElementById('page-title').textContent = titles[page] || 'FACELOCK';
+        const pt = document.getElementById('page-title');
+        if (pt) pt.textContent = titles[page] || 'FACELOCK';
         this.renderPage(page);
     },
 

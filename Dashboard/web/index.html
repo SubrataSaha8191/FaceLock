@@ -13,7 +13,43 @@
     <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
-    <div id="art-layer" aria-hidden="true"></div>
+    <!-- Spotify Wrapped-Style Art Layer -->
+    <div id="art-layer" aria-hidden="true">
+        <div class="bg-grid-pattern"></div>
+        <!-- Bottom-Left Concentric Rings -->
+        <div class="wrapped-rings wrapped-rings-bl">
+            <svg viewBox="0 0 800 800" fill="none" class="ring-group">
+                <circle cx="400" cy="400" r="395" fill="#F8FAFC"/>
+                <circle cx="400" cy="400" r="355" fill="#212121"/>
+                <circle cx="400" cy="400" r="315" fill="#F8FAFC"/>
+                <circle cx="400" cy="400" r="275" fill="#212121"/>
+                <circle cx="400" cy="400" r="235" fill="#F8FAFC"/>
+                <circle cx="400" cy="400" r="195" fill="#212121"/>
+                <circle cx="400" cy="400" r="155" fill="#F8FAFC"/>
+                <circle cx="400" cy="400" r="115" fill="#212121"/>
+                <circle cx="400" cy="400" r="75" fill="#F8FAFC"/>
+                <circle cx="400" cy="400" r="35" fill="#212121"/>
+            </svg>
+        </div>
+        <!-- Bottom-Right Spotify Wrapped 45-Degree Diagonal Zebra Stripe Texture -->
+        <div class="wrapped-stripes wrapped-stripes-br">
+            <svg viewBox="0 0 600 600" fill="none">
+                <g stroke="#F8FAFC" stroke-width="22" opacity="0.10">
+                    <line x1="0" y1="600" x2="600" y2="0" />
+                    <line x1="0" y1="500" x2="500" y2="0" />
+                    <line x1="0" y1="400" x2="400" y2="0" />
+                    <line x1="0" y1="300" x2="300" y2="0" />
+                    <line x1="0" y1="200" x2="200" y2="0" />
+                    <line x1="0" y1="100" x2="100" y2="0" />
+                    <line x1="100" y1="600" x2="600" y2="100" />
+                    <line x1="200" y1="600" x2="600" y2="200" />
+                    <line x1="300" y1="600" x2="600" y2="300" />
+                    <line x1="400" y1="600" x2="600" y2="400" />
+                    <line x1="500" y1="600" x2="600" y2="500" />
+                </g>
+            </svg>
+        </div>
+    </div>
 
     <!-- Green Circle Zoom Reveal Overlay -->
     <div id="sidebar-fill-bg"></div>
@@ -47,11 +83,10 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/></svg>
                     <span>MENU</span>
                 </button>
-                <h2 id="page-title" class="page-title">OVERVIEW</h2>
             </div>
             
             <div class="header-center">
-                <span class="header-brand">FACELOCK</span>
+                <span id="page-title" class="header-brand">FACELOCK</span>
             </div>
 
             <div class="header-right">

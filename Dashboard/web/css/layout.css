@@ -1,6 +1,27 @@
-/* ═══ Plain White Canvas & Transparent Header Layout ═══ */
+/* ═══ Dynamic Editorial Canvas & Structured Layout — #212121 ═══ */
 
-#art-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; background: #FFFFFF; }
+/* Vibrant Tech Ambient Art Background Layer */
+#art-layer {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0; background: #212121;
+    overflow: hidden;
+}
+
+/* Subtle Modern Dot Matrix Pattern Overlay for Dark Mode */
+.bg-grid-pattern {
+    position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1.2px, transparent 1.2px);
+    background-size: 32px 32px; opacity: 0.45;
+}
+
+/* Spotify Wrapped Concentric Rings (Bottom-Left) */
+.wrapped-rings { position: absolute; pointer-events: none; opacity: 0.12; aspect-ratio: 1 / 1; }
+.wrapped-rings svg { width: 100%; height: 100%; }
+.wrapped-rings-bl { bottom: -22vw; left: -14vw; width: 52vw; min-width: 480px; max-width: 850px; }
+
+/* Spotify Wrapped 45-Degree Diagonal Zebra Stripe Pattern (Bottom-Right) */
+.wrapped-stripes { position: absolute; pointer-events: none; }
+.wrapped-stripes svg { width: 100%; height: 100%; }
+.wrapped-stripes-br { bottom: -12vw; right: -8vw; width: 45vw; min-width: 400px; max-width: 750px; aspect-ratio: 1 / 1; }
 
 /* 60FPS Green Circle Zoom Overlay */
 #sidebar-fill-bg {
@@ -14,17 +35,18 @@
 #sidebar-drawer {
     position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 100;
     padding: 40px 60px; display: flex; flex-direction: column;
-    pointer-events: none; opacity: 0; visibility: hidden; transition: opacity 300ms ease; color: #0F172A;
+    pointer-events: none; opacity: 0; visibility: hidden; transition: opacity 300ms ease; color: #F8FAFC;
 }
 #sidebar-drawer.open { pointer-events: auto; opacity: 1; visibility: visible; }
 
 .sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .brand { display: flex; align-items: center; gap: 12px; }
-.brand-icon { width: 40px; height: 40px; background: #0F172A; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-.brand-name { font-family: var(--display); font-size: 18px; font-weight: 800; letter-spacing: 2px; color: #0F172A; }
+.brand-icon { width: 40px; height: 40px; background: #F8FAFC; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.brand-icon svg { stroke: #0F172A; }
+.brand-name { font-family: var(--display); font-size: 18px; font-weight: 800; letter-spacing: 2px; color: #F8FAFC; }
 
-.close-btn { background: #0F172A; border: none; color: #FFF; font-size: 18px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 200ms ease; }
-.close-btn:hover { background: #FF3800; transform: scale(1.1); }
+.close-btn { background: #F8FAFC; border: none; color: #0F172A; font-size: 18px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 200ms ease; }
+.close-btn:hover { background: #FF3800; color: #FFF; transform: scale(1.1); }
 
 /* Center Navigation Links */
 .nav-links {
@@ -37,7 +59,7 @@
     letter-spacing: -1.5px; color: #063826; transition: color 300ms ease, transform 300ms ease; display: inline-block;
 }
 .nav-item:hover span { color: #FFFFFF; transform: scale(1.05); }
-.nav-item.active span { color: #FFFFFF; text-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+.nav-item.active span { color: #FFFFFF; text-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 .nav-footer { margin-top: auto; text-align: center; }
 
 /* 100% Transparent Header with Centered Brand */
@@ -49,11 +71,11 @@
 .header-left { display: flex; align-items: center; gap: 20px; z-index: 2; }
 .menu-btn {
     display: flex; align-items: center; gap: 10px; padding: 10px 22px;
-    background: #0F172A; border: none; border-radius: var(--pill);
-    color: #1EFC51; font-family: var(--display); font-size: 11px; font-weight: 800;
+    background: #F8FAFC; border: none; border-radius: var(--pill);
+    color: #0F172A; font-family: var(--display); font-size: 11px; font-weight: 800;
     letter-spacing: 1.5px; cursor: pointer; transition: transform 200ms ease;
 }
-.menu-btn:hover { transform: scale(1.04); background: #0052FF; color: #FFF; }
+.menu-btn:hover { transform: scale(1.04); background: #2563EB; color: #FFF; }
 .page-title { font-family: var(--display); font-size: 18px; font-weight: 800; letter-spacing: 1px; color: var(--text-primary); }
 
 /* Absolute Center Navbar Brand */
@@ -69,16 +91,22 @@
 .header-right { display: flex; align-items: center; gap: 16px; z-index: 2; }
 
 /* Canvas Container */
-#main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; z-index: 5; position: relative; background: #FFFFFF; }
-#page-container { flex: 1; overflow-y: auto; padding: 40px 48px; background: #FFFFFF; }
+#main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; z-index: 5; position: relative; background: transparent; }
+#page-container { flex: 1; overflow-y: auto; padding: 32px 48px; background: transparent; }
 
-/* Spatial Canvas Overview Grid */
-.overview-spatial-grid {
-    display: grid; grid-template-columns: 240px 1fr 280px; gap: 40px;
-    min-height: calc(100vh - 180px); position: relative;
+/* ═══ Full-Width Structured Grid Layout ═══ */
+.overview-structured-grid {
+    display: flex; flex-direction: column; gap: 40px; width: 100%;
 }
-.spatial-left { display: flex; flex-direction: column; justify-content: space-between; }
-.spatial-center { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-.spatial-right { display: flex; flex-direction: column; justify-content: space-between; }
 
-.stat-pos-card { padding: 0; background: transparent; border: none; box-shadow: none; border-radius: 0; }
+.metrics-top-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px;
+    padding-bottom: 32px; border-bottom: 1px solid var(--border); width: 100%;
+}
+.metric-block { display: flex; flex-direction: column; gap: 6px; }
+
+.main-workspace-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; width: 100%;
+}
+.workspace-main-panel { display: flex; flex-direction: column; width: 100%; }
+.workspace-side-panel { display: flex; flex-direction: column; width: 100%; }
