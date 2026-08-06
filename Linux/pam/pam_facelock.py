@@ -5,9 +5,8 @@ Invoked by Linux PAM via pam_exec.so for sudo, GDM lock screen,
 LightDM, and Polkit application authorization gates.
 
 Exit codes:
-    0 — Authentication successful (PAM_SUCCESS)
-    1 — Authentication failed (PAM_AUTH_ERR)
-    2 — Service unavailable (Fallback to system auth)
+    0 — Authentication successful (Face matched, skip password prompt)
+    1 — Authentication failed or skipped (Fallback to default OS password)
 """
 
 import getpass
@@ -34,37 +33,21 @@ def main() -> int:
 
     try:
         if not client.check_enrolled(user):
-            # User not enrolled in FaceLock — skip (allow system auth fallback)
-            return 0
+            return 1
 
-        # Attempt 1: Live Biometric Camera Face Verification
+        # Attempt: Live Biometric Camera Face Verification
         if client.authenticate_face(user):
-            return 0
+            return 0  # Face unlock successful! Skip password prompt.
 
-        # Attempt 2: Password Fallback
-        password = _get_password()
-        if password and client.verify_password(user, password):
-            return 0
+        return 1  # Face match failed -> Fallback to default OS password prompt
 
-        return 1
-
-    except ConnectionRefusedError:
-        return 2
     except Exception:
-        return 2
+        return 1  # Service unavailable -> Fallback to default OS password prompt
 
 
 def _get_pam_user() -> str:
     """Read PAM_USER from environment or fallback to current user."""
     return os.environ.get("PAM_USER", getpass.getuser())
-
-
-def _get_password() -> str:
-    """Read password from stdin if piped by PAM."""
-    try:
-        return sys.stdin.readline().strip()
-    except EOFError:
-        return ""
 
 
 if __name__ == "__main__":

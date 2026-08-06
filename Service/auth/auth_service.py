@@ -4,8 +4,13 @@ import json
 import os
 import socket
 import threading
+import sys
 from pathlib import Path
 from typing import Optional
+
+project_root = Path(__file__).resolve().parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
 
 from Core.config.settings import SystemSettings
 from Core.config.loader import ConfigLoader
@@ -110,3 +115,11 @@ class AuthService:
         """Remove stale socket file."""
         if os.path.exists(self.socket_path):
             os.unlink(self.socket_path)
+
+
+if __name__ == "__main__":
+    service = AuthService()
+    try:
+        service.start()
+    except KeyboardInterrupt:
+        service.stop()
