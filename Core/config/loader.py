@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Optional
 
-from Core.config.settings import SystemSettings
+from Core.config.settings import SystemSettings, get_default_data_dir
 
 
 class ConfigLoader:
@@ -12,7 +12,7 @@ class ConfigLoader:
 
     def __init__(self, config_path: Optional[Path] = None):
         if config_path is None:
-            config_path = Path.home() / ".facelock" / "config.json"
+            config_path = get_default_data_dir() / "config.json"
         self.config_path = config_path
 
     def load(self) -> SystemSettings:

@@ -55,19 +55,16 @@ systemctl restart facelock.service
 echo "[✓] FaceLock systemd background service active & enabled on boot!"
 
 # 2. Inject FaceLock into PAM Configuration Stack
-PAM_RULE="auth sufficient pam_exec.so expose_authtok $PYTHON_BIN $PAM_HELPER"
+PAM_RULE="auth sufficient pam_exec.so $PYTHON_BIN $PAM_HELPER"
 
 install_pam_target() {
     local target="$1"
     local pam_file="/etc/pam.d/$target"
     if [ -f "$pam_file" ]; then
-        if grep -q "pam_facelock.py" "$pam_file"; then
-            echo "[✓] FaceLock already configured in $pam_file"
-        else
-            echo "[+] Injecting FaceLock into $pam_file..."
-            sed -i "1a $PAM_RULE" "$pam_file"
-            echo "[✓] Successfully updated $pam_file"
-        fi
+        sed -i '/pam_facelock.py/d' "$pam_file"
+        echo "[+] Injecting FaceLock into $pam_file..."
+        sed -i "1a $PAM_RULE" "$pam_file"
+        echo "[✓] Successfully updated $pam_file"
     fi
 }
 

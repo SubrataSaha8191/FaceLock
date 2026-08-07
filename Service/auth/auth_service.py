@@ -49,6 +49,8 @@ class AuthService:
         self._cleanup_socket()
         self._server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self._server.bind(self.socket_path)
+        try: os.chmod(self.socket_path, 0o666)
+        except Exception: pass
         self._server.listen(5)
         self._server.settimeout(1.0)
         self._running = True
@@ -65,8 +67,7 @@ class AuthService:
     def stop(self) -> None:
         """Shutdown the socket server."""
         self._running = False
-        if self._server:
-            self._server.close()
+        if self._server: self._server.close()
         self._cleanup_socket()
         logger.info("Auth service stopped.")
 
@@ -83,10 +84,19 @@ class AuthService:
         finally:
             conn.close()
 
+    def _resolve_user(self, user_id: str) -> str:
+        enrolled = self.storage.get_all_users()
+        if not enrolled: return user_id
+        for u in enrolled:
+            if user_id in (u[0], u[1], u[1].lower(), u[1].lower().replace(" ", "-"), u[1].lower().replace(" ", "_")):
+                return u[0]
+        return enrolled[0][0] if len(enrolled) == 1 else user_id
+
     def _process_request(self, request: dict) -> dict:
         """Route request to appropriate auth method."""
         action = request.get("action", "")
-        user_id = request.get("user_id", "")
+        raw_user_id = request.get("user_id", "")
+        user_id = self._resolve_user(raw_user_id)
 
         if action == "verify_password":
             password = request.get("password", "")
@@ -114,15 +124,21 @@ class AuthService:
             return {"result": ok, "similarity": round(float(sim), 4), "message": "Face match verified" if ok else "Face auth failed"}
 
         if action == "check_enrolled":
-            users = [u[0] for u in self.storage.get_all_users()]
-            return {"result": user_id in users, "message": "enrollment_check"}
+            enrolled = self.storage.get_all_users()
+            is_enrolled = len(enrolled) > 0 and (
+                user_id in [u[0] for u in enrolled] or
+                any(raw_user_id in (u[0], u[1], u[1].lower(), u[1].lower().replace(" ", "-"), u[1].lower().replace(" ", "_")) for u in enrolled) or
+                len(enrolled) == 1
+            )
+            return {"result": is_enrolled, "message": "enrollment_check"}
 
         return {"result": False, "message": f"Unknown action: {action}"}
 
     def _cleanup_socket(self) -> None:
         """Remove stale socket file."""
         if os.path.exists(self.socket_path):
-            os.unlink(self.socket_path)
+            try: os.unlink(self.socket_path)
+            except Exception: pass
 
 
 if __name__ == "__main__":

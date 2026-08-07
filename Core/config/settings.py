@@ -44,11 +44,21 @@ class SecuritySettings(BaseModel):
     )
 
 
+def get_default_data_dir() -> Path:
+    import os
+    if "FACELOCK_DATA_DIR" in os.environ: return Path(os.environ["FACELOCK_DATA_DIR"])
+    if os.geteuid() == 0 or Path.home() == Path("/root"):
+        u = os.environ.get("SUDO_USER") or os.environ.get("DOAS_USER")
+        if u and (Path("/home") / u).exists(): return Path("/home") / u / ".facelock"
+        homes = [h for h in Path("/home").glob("*") if h.is_dir() and not h.name.startswith(".")]
+        if homes: return homes[0] / ".facelock"
+    return Path.home() / ".facelock"
+
 class SystemSettings(BaseModel):
     """Global system configuration settings."""
 
     data_dir: Path = Field(
-        default=Path.home() / ".facelock", description="Root directory for application data"
+        default_factory=get_default_data_dir, description="Root directory for application data"
     )
     db_name: str = Field(default="facelock.db", description="Database file name")
     camera: CameraSettings = Field(default_factory=CameraSettings)
