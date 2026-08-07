@@ -11,16 +11,10 @@ if str(project_root) not in sys.path:
 
 
 def get_env() -> dict:
-    """Prepare environment dictionary with correct Qt plugin path."""
     import os
-    import PySide6
-    pyside_dir = Path(PySide6.__file__).resolve().parent
-    plugins_path = pyside_dir / "Qt" / "plugins"
     env = os.environ.copy()
     env["PYTHONPATH"] = str(project_root)
-    env["QT_QPA_PLATFORM_PLUGIN_PATH"] = str(plugins_path)
     return env
-
 
 def run_tests() -> bool:
     """Execute the pytest suite and print status."""

@@ -116,14 +116,16 @@
     </div>
     <!-- Add Protected Application Modal Overlay -->
     <div id="app-modal-backdrop" class="modal-backdrop" style="display:none;">
-        <div class="modal-card">
-            <div class="modal-header"><div class="section-title" style="margin:0;">PROTECT NEW APPLICATION</div><button class="close-btn" onclick="App.closeAddAppModal()">✕</button></div>
-            <form onsubmit="App.submitAddAppModal(event)">
-                <div class="form-group"><label class="form-label">APPLICATION NAME</label><input type="text" id="app-name" class="form-input" placeholder="e.g. VS Code, Slack" required></div>
-                <div class="form-group"><label class="form-label">COMMAND / EXECUTABLE PATH</label><input type="text" id="app-cmd" class="form-input" placeholder="e.g. code, slack, /usr/bin/firefox" required></div>
-                <div class="form-group"><label class="form-label">ICON CATEGORY</label><select id="app-icon" class="form-input" style="background:#181818; color:var(--text-primary);"><option value="app">Generic Application</option><option value="terminal">Terminal / CLI</option><option value="browser">Web Browser</option><option value="settings">System Settings</option></select></div>
-                <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;"><button type="button" class="btn btn-secondary" onclick="App.closeAddAppModal()">CANCEL</button><button type="submit" class="btn btn-accent">ENABLE PROTECTION</button></div>
-            </form>
+        <div class="modal-card" style="max-width:560px; width:90%;">
+            <div class="modal-header"><div class="section-title" style="margin:0;">SELECT APPLICATION TO PROTECT</div><button class="close-btn" onclick="App.closeAddAppModal()">✕</button></div>
+            <div style="margin-top:14px;">
+                <div style="position:relative; width:100%;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); pointer-events:none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="app-search-input" class="form-input" placeholder="Search installed applications (e.g. VS Code, Chrome)..." oninput="App.filterInstalledApps(this.value)" style="width:100%; padding-left:38px;">
+                </div>
+                <div id="installed-apps-grid" style="display:flex; flex-direction:column; gap:8px; max-height:340px; overflow-y:auto; margin-top:14px; padding-right:4px;"></div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:18px;"><button type="button" class="btn btn-secondary" onclick="App.closeAddAppModal()">CANCEL</button></div>
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>

@@ -2,9 +2,12 @@
  * Dynamic Page Templates — Dynamic Canvas Structured Telemetry & Layout
  */
 const appIcons = {
+    code: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
     terminal: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>`,
     browser: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
     settings: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+    media: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
+    security: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
     app: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>`
 };
 
@@ -40,19 +43,22 @@ const Pages = {
                             <p class="subtext-hero" style="font-size:12px; margin-top:16px;">FaceLock bio-encryption active. Ready for Linux PAM unlock.</p>
                         `}
                     </div>
-                    <div class="workspace-side-panel gsap-hidden">
-                        <div class="hero-label" style="margin-bottom:16px;">SYSTEM DIAGNOSTICS</div>
+                    <div class="workspace-side-panel gsap-hidden" style="display:flex; flex-direction:column; height:100%;">
+                        <div class="hero-label" style="margin-bottom:14px;">SYSTEM DIAGNOSTICS</div>
                         <div class="sys-row"><div><span class="sys-dot"></span><span>OpenCV Frame Pipeline</span></div><strong>${m.cameraActive?'ACTIVE':'READY'}</strong></div>
                         <div class="sys-row"><div><span class="sys-dot"></span><span>Haar Cascade Detector</span></div><strong>OK</strong></div>
                         <div class="sys-row"><div><span class="sys-dot"></span><span>PAM Listener Socket</span></div><strong>ONLINE</strong></div>
                         <div class="sys-row"><div><span class="sys-dot"></span><span>AES-256 Storage Gate</span></div><strong>ENCRYPTED</strong></div>
-                        <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
-                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;"><div class="hero-label" style="margin:0;">PROTECTED APPLICATIONS</div><button class="btn btn-secondary" style="font-size:10px; padding:4px 10px;" onclick="App.openAddAppModal()">+ ADD APP</button></div>
-                            <div style="display:flex; flex-direction:column; gap:8px; max-height:165px; overflow-y:auto; padding-right:4px;">
-                                ${apps.length === 0 ? '<div class="meta-value">No custom applications protected yet.</div>' : apps.map(a => `
-                                    <div style="display:flex; align-items:center; justify-content:space-between; background:#181818; border:1px solid var(--border); border-radius:10px; padding:8px 12px;">
-                                        <div style="display:flex; align-items:center; gap:10px;"><div style="color:#2563EB; display:flex; align-items:center;">${appIcons[a.icon] || appIcons.app}</div><div><div style="font-size:13px; font-weight:600; color:var(--text-primary);">${a.name}</div><div style="font-size:10px; color:var(--text-dim); font-family:monospace;">${a.cmd}</div></div></div>
-                                        <div style="display:flex; align-items:center; gap:8px;"><span style="font-size:9px; background:rgba(37,99,235,0.2); color:#60A5FA; padding:2px 6px; border-radius:4px; font-weight:700;">LOCKED</span><button class="btn-icon-danger" style="width:22px; height:22px;" title="Remove App Protection" onclick="App.removeApp('${a.id}')"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+                        <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border); flex:1; display:flex; flex-direction:column;">
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;"><div class="hero-label" style="margin:0; font-size:11px; letter-spacing:2px;">PROTECTED APPLICATIONS</div><button class="btn btn-accent" style="font-size:11px; padding:6px 14px; font-weight:700; letter-spacing:0.8px; border-radius:20px;" onclick="App.openAddAppModal()">+ ADD APP</button></div>
+                            <div id="protected-apps-list" style="display:flex; flex-direction:column; gap:10px; flex:1; min-height:260px; max-height:440px; overflow-y:auto; padding-right:4px;">
+                                ${(!apps || !Array.isArray(apps) || apps.length === 0) ? '<div class="meta-value">No custom applications protected yet. Click + ADD APP to secure software.</div>' : apps.map(a => `
+                                    <div style="display:flex; align-items:center; justify-content:space-between; background:#181818; border:1px solid var(--border); border-radius:10px; padding:10px 14px;">
+                                        <div style="display:flex; align-items:center; gap:12px;"><div style="color:#2563EB; display:flex; align-items:center;">${appIcons[a.icon] || appIcons.app}</div><div><div style="font-size:13px; font-weight:600; color:var(--text-primary);">${a.name}</div><div style="font-size:10px; color:var(--text-dim); font-family:monospace;">${a.cmd}</div></div></div>
+                                        <div style="display:flex; align-items:center; gap:8px;">
+                                            <button class="btn btn-secondary" style="font-size:10px; padding:4px 8px; font-weight:700; color:#242425; border-color:rgba(18, 18, 19, 0.4);" onclick="App.launchApp('${a.id}')" title="Real-Time FaceLock Gate Launch">LAUNCH</button>
+                                            <button class="btn-icon-danger" style="width:24px; height:24px;" title="Remove App Protection" onclick="App.removeApp('${a.id}')"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                                        </div>
                                     </div>
                                 `).join('')}
                             </div>

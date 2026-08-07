@@ -6,6 +6,7 @@ and launches the target process only upon successful authentication.
 """
 
 import argparse
+import getpass
 import os
 import subprocess
 import sys
@@ -16,23 +17,71 @@ if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
 from Service.auth.service_client import ServiceClient
+from Core.config.loader import ConfigLoader
+from Core.storage.encrypted_sqlite_storage import EncryptedSQLiteStorage
+
+
+def resolve_user(client: ServiceClient, requested_user: str = None) -> str:
+    """Resolve requested user or fallback to enrolled database users."""
+    if requested_user and client.check_enrolled(requested_user):
+        return requested_user
+
+    try:
+        settings = ConfigLoader().load()
+        storage = EncryptedSQLiteStorage(settings.db_path)
+        enrolled = storage.get_all_users()
+        if enrolled:
+            sys_user = os.environ.get("USER", "")
+            for record in enrolled:
+                uid, uname = record[0], record[1]
+                if uid in (requested_user, sys_user) or uname in (requested_user, sys_user):
+                    return uid
+            return enrolled[0][0]
+    except Exception:
+        pass
+    return requested_user or os.environ.get("USER", "user_01")
+
+
+def prompt_passphrase(user_id: str) -> str:
+    """Prompt user for passphrase via GUI dialog (Zenity/KDialog) or TTY getpass."""
+    import shutil
+    if shutil.which("zenity"):
+        try:
+            res = subprocess.run(
+                ["zenity", "--password", "--title=🔒 FaceLock Security Gate", f"--text=Biometric Auth Unavailable for '{user_id}'.\nEnter Master Passphrase to launch app:"],
+                capture_output=True, text=True, timeout=30
+            )
+            return res.stdout.strip() if res.returncode == 0 else ""
+        except Exception: pass
+    if shutil.which("kdialog"):
+        try:
+            res = subprocess.run(
+                ["kdialog", "--password", f"🔒 FaceLock Gate — Passphrase for '{user_id}':"],
+                capture_output=True, text=True, timeout=30
+            )
+            return res.stdout.strip() if res.returncode == 0 else ""
+        except Exception: pass
+    if sys.stdin.isatty():
+        try: return getpass.getpass(f"🔑 Passphrase for '{user_id}': ")
+        except EOFError: return ""
+    return ""
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="FaceLock Real-Time App Protection Gate")
     parser.add_argument("--cmd", required=True, help="Target application executable command")
-    parser.add_argument("--user", default=None, help="Enrolled User ID (defaults to system user)")
+    parser.add_argument("--user", default=None, help="Enrolled User ID")
     parser.add_argument("--secret", default="MasterKey123", help="Master encryption secret key")
     args = parser.parse_args()
 
     client = ServiceClient()
-    user_id = args.user or os.environ.get("USER", "user_01")
+    user_id = resolve_user(client, args.user)
     print(f"🔒 FaceLock App Gate — Protecting target command: '{args.cmd}'")
-    print(f"📷 Verifying identity for '{user_id}'...")
+    print(f"📷 Verifying identity for enrolled user '{user_id}'...")
 
     try:
         if not client.check_enrolled(user_id):
-            print(f"❌ User '{user_id}' is not enrolled. App launch denied.")
+            print(f"❌ User '{user_id}' is not enrolled in FaceLock database. App launch denied.")
             return 1
 
         if client.authenticate_face(user_id, args.secret):
@@ -40,7 +89,13 @@ def main() -> int:
             subprocess.Popen(args.cmd, shell=True)
             return 0
         else:
-            print("❌ ACCESS DENIED — Facial verification failed.")
+            print("⚠️ Face biometric match insufficient. Checking passphrase fallback...")
+            pw = prompt_passphrase(user_id)
+            if pw and client.verify_password(user_id, pw):
+                print(f"✅ PASSPHRASE VERIFIED — Launching '{args.cmd}'...")
+                subprocess.Popen(args.cmd, shell=True)
+                return 0
+            print("❌ ACCESS DENIED — Facial & Passphrase verification failed.")
             return 1
     except ConnectionRefusedError:
         print("⚠️ FaceLock service daemon offline. Falling back to direct app launch...")

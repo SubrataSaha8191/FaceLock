@@ -96,12 +96,20 @@ class AuthService:
 
         if action == "authenticate_face":
             secret = request.get("secret", "MasterKey123")
-            import cv2
-            cap = cv2.VideoCapture(0)
-            ret, frame = cap.read()
-            cap.release()
-            if not ret or frame is None:
-                return {"result": False, "message": "Camera frame capture failed"}
+            import cv2, time, numpy as np
+            frame = None
+            for attempt in range(4):
+                cap = cv2.VideoCapture(self.settings.camera.device_id)
+                if cap.isOpened():
+                    for _ in range(8):
+                        ret, f = cap.read()
+                        if ret and f is not None: frame = f
+                        time.sleep(0.03)
+                    cap.release()
+                if frame is not None and frame.size > 0 and np.mean(frame) > 10: break
+                time.sleep(0.1)
+            if frame is None or frame.size == 0 or np.mean(frame) <= 10:
+                return {"result": False, "message": "Camera frame capture failed or underexposed"}
             ok, sim = self.engine.authenticate_user(user_id, secret, frame)
             return {"result": ok, "similarity": round(float(sim), 4), "message": "Face match verified" if ok else "Face auth failed"}
 
