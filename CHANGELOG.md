@@ -23,6 +23,12 @@
 - New `Windows/` installer and uninstaller scripts and a rewritten Credential Provider bridge (`--face`, `--password`). Sign-in screen unlock and protected apps are not available yet. See `Windows/README.md`.
 - `pip install -e .` now works (it failed on a multi-folder layout); Qt is installed on Linux only.
 
+### Protected apps
+- Fixed launcher overrides being ignored by GNOME: keys were written in lowercase (`exec`, `name`); they now keep their case and validate with `desktop-file-validate`.
+- All launchers for a program are protected, including menu actions ("New Window") and with `DBusActivatable` turned off; web apps match their own launcher instead of Chrome's.
+- The dashboard no longer reports an app as protected when its launcher could not be found, and repairs old overrides on start.
+- Desktop notifications while the gate waits for your face.
+
 ### Other
 - Service reloads settings without a restart, serialises camera access and tolerates probe connections.
 - Tests no longer touch the real `~/.facelock` directory.

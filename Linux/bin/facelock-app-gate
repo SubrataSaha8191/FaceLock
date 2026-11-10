@@ -8,6 +8,7 @@ and launches the target process only upon successful authentication.
 import argparse
 import getpass
 import os
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -91,12 +92,30 @@ def verify_passphrase_offline(user_id: str, password: str) -> bool:
         return False
 
 
+def notify(title: str, body: str) -> None:
+    """Desktop notification: a dock/menu launch has no terminal, so this is the only feedback."""
+    import shutil
+    if shutil.which("notify-send"):
+        try:
+            subprocess.Popen(["notify-send", "-a", "FaceLock", "-i", "security-high", "-t", "4000", title, body],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception:
+            pass
+
+
+def build_command(cmd: str, rest) -> str:
+    """The app command plus any arguments the launcher passed (links, files)."""
+    return cmd if not rest else cmd + " " + " ".join(shlex.quote(a) for a in rest)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="FaceLock Real-Time App Protection Gate")
     parser.add_argument("--cmd", required=True, help="Target application executable command")
     parser.add_argument("--user", default=None, help="Enrolled User ID")
     parser.add_argument("--secret", default="MasterKey123", help="Master encryption secret key")
+    parser.add_argument("rest", nargs="*", help="arguments passed on to the app (URLs, files)")
     args = parser.parse_args()
+    launch = build_command(args.cmd, args.rest)
 
     client = ServiceClient()
     user_id = resolve_user(client, args.user)
@@ -108,16 +127,19 @@ def main() -> int:
             print(f"❌ User '{user_id}' is not enrolled in FaceLock database. App launch denied.")
             return 1
 
-        if client.authenticate_face(user_id, args.secret):
+        notify("FaceLock", "Look at the camera to open the app")
+        resp = client.authenticate_face_detailed(user_id, args.secret)
+        if resp.get("result"):
             print(f"✅ BIOMETRIC AUTHENTICATED — Launching '{args.cmd}'...")
-            subprocess.Popen(args.cmd, shell=True)
+            subprocess.Popen(launch, shell=True)
             return 0
         else:
             print("⚠️ Face biometric match insufficient. Checking passphrase fallback...")
+            notify("FaceLock", (resp.get("message") or "Face not recognised") + ". Enter your passphrase to continue.")
             pw = prompt_passphrase(user_id)
             if pw and client.verify_password(user_id, pw):
                 print(f"✅ PASSPHRASE VERIFIED — Launching '{args.cmd}'...")
-                subprocess.Popen(args.cmd, shell=True)
+                subprocess.Popen(launch, shell=True)
                 return 0
             print("❌ ACCESS DENIED — Facial & Passphrase verification failed.")
             return 1
@@ -128,7 +150,7 @@ def main() -> int:
         pw = prompt_passphrase(user_id)
         if pw and verify_passphrase_offline(user_id, pw):
             print(f"✅ PASSPHRASE VERIFIED — Launching '{args.cmd}'...")
-            subprocess.Popen(args.cmd, shell=True)
+            subprocess.Popen(launch, shell=True)
             return 0
         print("❌ ACCESS DENIED — Service offline and passphrase not verified.")
         return 1

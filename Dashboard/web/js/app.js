@@ -294,8 +294,9 @@ const App = {
   },
   async protectApp(i) {
     const a = this.shown[i]; if (!a) return;
-    await Api.call('add_protected_app', a.name, a.cmd, a.icon, a.iconName || '');
-    $('#app-modal').classList.remove('open'); this.toast(`${a.name} now needs your face`); this.refreshApps();
+    const r = await Api.call('add_protected_app', a.name, a.cmd, a.icon, a.iconName || '');
+    if (r && r.ok === false) { this.toast(r.msg || "Couldn't protect that app"); return; }
+    $('#app-modal').classList.remove('open'); this.toast(r.msg || `${a.name} now needs your face`); this.refreshApps();
   },
   async refreshApps() {
     const apps = (await Api.call('get_protected_apps')) || [];

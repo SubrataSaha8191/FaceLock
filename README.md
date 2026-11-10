@@ -109,6 +109,12 @@ It was tested on Windows Python under Wine (test suites and an end-to-end run), 
 - A computer account has **one** linked face profile. Extra profiles can be enrolled, but they will not unlock that account.
 - **Protected apps:** add an app from **Home → Protected apps → Add app**. Its launcher is wrapped by `facelock-app-gate`. If face unlock fails you are asked for the fallback passphrase.
 - The gate **fails closed**: if the service is not running it asks for the passphrase (checked against the local database) instead of opening the app.
+- **What the gate covers:** it protects *starting* the app from its launcher (dock, app menu, the launcher's right-click actions such as "New Window", and links/files opened with it). It does **not** stop you raising a window that is already open, and it is not a security boundary against someone running the program from a terminal. A notification tells you when it is waiting for your face.
+- Some distros ship more than one launcher for the same program (for example `google-chrome.desktop` and `com.google.Chrome.desktop`); FaceLock protects all of them.
+
+### The keyring prompt after a face login
+
+If you sign in to the desktop with your face, GNOME Keyring is not unlocked (its key is derived from your login *password*), and apps such as Chrome then show **"The login keyring did not get unlocked"**. FaceLock cannot and should not bypass this. Sign in with your password after boot and use your face for the lock screen, `sudo` and protected apps, or accept the prompt.
 
 ### Settings
 

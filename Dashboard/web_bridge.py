@@ -17,7 +17,7 @@ from Core.utils.icon_resolver import IconResolver
 from Core.account import AccountStore, GoogleSignIn, GoogleOAuthError
 from Core.detection.quality import assess_face
 from Core.camera.enhance import mean_luma
-from Linux.desktop_interceptor import install_gate, uninstall_gate, ensure_autostart
+from Linux.desktop_interceptor import install_gate, uninstall_gate, ensure_autostart, is_protected
 
 class FaceLockWebBridge:
     def __init__(self):
@@ -39,6 +39,7 @@ class FaceLockWebBridge:
         self._verify_user = None
         self._start_daemon()
         if os.name != "nt": ensure_autostart()
+        self._repair_gates()
 
     def get_users(self) -> List[Dict[str, Any]]:
         out = []
@@ -369,18 +370,33 @@ class FaceLockWebBridge:
             out[n] = self._icons.data_uri(n, base, base.lower())
         return out
 
+    def _repair_gates(self) -> None:
+        """Re-write launcher overrides for configured apps (fixes broken ones from older versions)."""
+        if os.name == "nt":
+            return
+        for a in self.get_protected_apps():
+            try:
+                install_gate(a.get("name", ""), a.get("cmd", ""))
+            except Exception:
+                pass
+
     def get_protected_apps(self) -> List[Dict[str, Any]]:
         return getattr(self.settings, "protected_apps", [])
 
     def add_protected_app(self, name: str, cmd: str, icon: str, icon_name: str = "") -> Dict[str, Any]:
         if os.name == "nt":
             return {"ok": False, "msg": "Protected apps are not available on Windows yet"}
-        aid = f"app_{len(self.get_protected_apps()) + 1}"
-        apps = list(self.get_protected_apps()) + [{"id": aid, "name": name, "cmd": cmd, "icon": icon or "app", "icon_name": icon_name or ""}]
-        self.settings.protected_apps = apps
+        # Install the launcher override first; only record the app if it can really be gated.
+        if not install_gate(name, cmd):
+            return {"ok": False, "msg": f"Couldn't find a launcher for '{name}', so it can't be protected"}
+        existing = list(self.get_protected_apps())
+        if any(x.get("cmd") == cmd for x in existing):
+            return {"ok": True, "msg": f"'{name}' is already protected"}
+        n = 1 + max([int(str(x.get("id", "app_0")).split("_")[-1] or 0) for x in existing] + [0])
+        existing.append({"id": f"app_{n}", "name": name, "cmd": cmd, "icon": icon or "app", "icon_name": icon_name or ""})
+        self.settings.protected_apps = existing
         self.config_loader.save(self.settings)
-        install_gate(name, cmd)
-        return {"ok": True, "msg": f"App '{name}' protected — OS launcher intercepted"}
+        return {"ok": True, "msg": f"App '{name}' protected — its launcher now asks for your face"}
 
     def remove_protected_app(self, app_id: str) -> Dict[str, Any]:
         removed = next((a for a in self.get_protected_apps() if a.get("id") == app_id), None)
