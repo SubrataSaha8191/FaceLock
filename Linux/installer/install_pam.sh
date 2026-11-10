@@ -55,7 +55,9 @@ systemctl restart facelock.service
 echo "[✓] FaceLock systemd background service active & enabled on boot!"
 
 # 2. Inject FaceLock into PAM Configuration Stack
-PAM_RULE="auth sufficient pam_exec.so $PYTHON_BIN $PAM_HELPER"
+# "quiet" stops pam_exec from printing "...python3 failed: exit code 1" on the lock screen when face unlock
+# simply does not match; PAM then falls through to the password prompt as usual.
+PAM_RULE="auth sufficient pam_exec.so quiet $PYTHON_BIN $PAM_HELPER"
 
 install_pam_target() {
     local target="$1"
