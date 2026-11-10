@@ -1,103 +1,222 @@
-# 🔒 FaceLock
-**A modern, system-wide biometric facial authentication platform for Linux.**
+# FaceLock
 
-FaceLock replaces your traditional passwords with lightning-fast, highly secure facial recognition. It integrates deeply into the Linux OS via PAM (Pluggable Authentication Modules), allowing you to authenticate `sudo` commands, unlock your GDM lock screen, and protect sensitive desktop applications using just your face.
+**Face unlock for Linux that works from any angle.**
 
-## 🌟 Features
-- **Works from any angle**: guided Face ID-style enrollment captures you from nine head directions, and unlock accepts any of them, in dim light too.
-- **Deep face recognition**: YuNet detector + SFace embeddings (replaces the old Haar-cascade/thumbnail matcher).
-- **OS Integration (PAM)**: Works natively with `sudo`, lock screens (GDM/LightDM), and `polkit`.
-- **Application Gate**: Protect sensitive apps (like OBS or Chrome) from unauthorized access.
-- **Liveness Detection**: Anti-spoofing technology ensures attackers can't bypass it with a photo.
-- **Dashboard UI**: A Material-style desktop dashboard with a guided enrollment ring, live detector view, one-click unlock test, and settings.
-- **Python Developer API**: Embed FaceLock directly into your own Python applications!
+FaceLock lets you unlock your lock screen, approve `sudo`, and gate sensitive apps with your face. It enrolls you the way a phone does, by slowly turning your head in a circle, so it still recognises you when you are off-centre, tilted, or in dim light.
 
 ---
 
-## 🚀 Installation & Setup
+## Highlights
 
-If you have just cloned or downloaded this repository, follow these steps to get FaceLock running:
+- **Works from any angle.** A guided scan captures nine head directions (straight ahead plus eight around it). Unlock accepts any of them.
+- **Modern recognition.** YuNet face detection and SFace deep embeddings, with low-light enhancement and quality checks.
+- **Patient, not twitchy.** An unlock attempt watches the camera for a few seconds and succeeds as soon as it is sure. Bad light or no face in view never counts toward a lockout.
+- **System-wide.** PAM integration for `sudo`, GDM and LightDM lock screens, plus a launcher gate for protected apps.
+- **A dashboard you will want to open.** Guided face scan, one-click unlock test, live detector view, settings, activity, light and dark themes.
+- **Private by design.** Face data stays on your machine, encrypted at rest. Google sign-in is optional and only used to show your name and photo.
+- **Developer SDK.** A tiny Python client ([`facelock_dev`](https://github.com/SubrataSaha8191/facelock_dev)) so your own apps can ask "is this the owner?".
 
-### 1. Setup the Environment
+---
+
+## Requirements
+
+- Linux with systemd and PAM (the installer configures the GDM and LightDM login stacks and `sudo`)
+- Python 3.9 or newer
+- A webcam
+- About 40 MB of disk for the face models
+
+---
+
+## Install
+
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/FaceLock.git
+git clone https://github.com/SubrataSaha8191/FaceLock.git
 cd FaceLock
 
-# Create a virtual environment and install dependencies
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e .
 ```
 
-The face models (about 39 MB) ship in `Models/`. If they are missing, fetch and verify them with:
+The two face models (about 39 MB) live in `Models/`. If they are missing, fetch and verify them (checksummed):
+
 ```bash
 python3 Scripts/fetch_models.py
 ```
 
-### 2. Launch the Dashboard to Enroll
-Before activating OS authentication, you must enroll your face!
+### 1. Enroll your face
+
 ```bash
 python3 run.py
 ```
-* Open **Enroll**, enter your details, then look at the camera and slowly move your head in a circle until the ring fills in (about 20 seconds).
-* Use **Unlock → Test unlock** to try it before turning on OS integration.
-* **Upgrading from an older version?** Profiles made with the old matcher can't be used with the new models. Enroll again, then restart the service (`sudo systemctl restart facelock`, or however you started `Service/auth/auth_service.py`). Until you re-enroll, sudo and the lock screen simply fall back to your password.
-* After running it once, you can also launch FaceLock directly from your system's Desktop Application Menu!
 
-### 3. Install OS Integration (PAM)
-Once enrolled, run the installer to enable system-wide authentication. This will configure the background daemon and inject FaceLock into the OS stack:
+`run.py` runs the test suite and then opens the dashboard. Once installed you can also launch **FaceLock** from your application menu.
+
+1. Open **Enroll**, enter your name and a fallback passphrase.
+2. Press **Start face scan**, look at the camera, then slowly move your head in a circle until every segment of the ring fills (about 20 seconds).
+3. Open **Unlock → Test unlock** to try it before turning on OS integration.
+
+User IDs are assigned automatically; you never type or see one.
+
+### 2. Turn on lock screen and `sudo`
+
 ```bash
 sudo bash Linux/installer/install_pam.sh
 ```
 
-That's it! Now open a new terminal, type `sudo echo "hello"`, and watch the magic happen.
+This installs the background service and adds FaceLock to the PAM stacks. Open a new terminal and run `sudo echo hello`.
+
+> **Upgrading from an older version?** Profiles made with the old thumbnail matcher cannot be used with the new models. Re-enroll (use **Re-scan face** on the profile; your name and passphrase are kept), then restart the service:
+>
+> ```bash
+> sudo systemctl restart facelock
+> ```
+>
+> Until you do both, `sudo` and the lock screen fall back to your password. The dashboard's **Security checkup** tells you when the service is running old code.
 
 ---
 
-## 💻 Developer API
+## Using FaceLock
 
-FaceLock isn't just for the OS—it's a full Python library you can use in **any of your own Python projects**! Want to build a high-security admin panel, a sensitive data vault, or a custom biometric captcha?
+### Dashboard
 
-Just import the `facelock` library!
+| Page | What it does |
+|---|---|
+| **Home** | Your faces, protected apps, protection status and how recognition works |
+| **Enroll** | Guided multi-angle face scan. Also used to **re-scan** an existing profile (only the face is replaced) |
+| **Unlock** | Runs the same check as the lock screen and shows the score |
+| **Live view** | Shows what the detector sees: face box, head pose, light and framing |
+| **Settings** | Match strictness, unlock window, liveness, adaptive learning |
+| **Activity** | Unlocks, enrollments and lockouts |
+| **Account** | Profile, security checkup, optional Google sign-in |
 
-### Example Usage:
+### Lock screen, `sudo` and protected apps
+
+- Each face profile is linked to an **OS account** when you enroll or re-scan. PAM (`sudo`, GDM, LightDM), the app gate and the SDK all find your profile through that link, whatever your name or login is.
+- A computer account has **one** linked face profile. Extra profiles can be enrolled, but they will not unlock that account.
+- **Protected apps:** add an app from **Home → Protected apps → Add app**. Its launcher is wrapped by `facelock-app-gate`. If face unlock fails you are asked for the fallback passphrase.
+- The gate **fails closed**: if the service is not running it asks for the passphrase (checked against the local database) instead of opening the app.
+
+### Settings
+
+| Setting | Default | Meaning |
+|---|---|---|
+| Match strictness | 40% | Cosine-similarity threshold. Lower is easier to unlock, higher is harder to fool |
+| Unlock window | 6 s | How long one attempt keeps looking before giving up |
+| Liveness check | On | Rejects flat photos and frozen video (see [Limits](#limits)) |
+| Learn as I change | On | Adds confident, new-looking unlocks to your profile so it follows glasses, light or a haircut |
+
+Changes are picked up by the running service automatically; no restart needed.
+
+### Account and Google sign-in (optional)
+
+You can link a Google account so FaceLock shows your name and photo. It does not unlock anything and is not used for face authentication. FaceLock uses the standard desktop OAuth flow (PKCE, loopback redirect), reads only your name, email and picture, and **never stores tokens**.
+
+To enable it you need your own OAuth client:
+
+1. In Google Cloud Console open **APIs & Services → Credentials**.
+2. Create an OAuth client of type **Desktop app**.
+3. Paste its client ID (and secret, if shown) on the **Account** page, then press **Sign in with Google**.
+
+The client settings and linked profile are stored in `~/.facelock/account.json` (mode 0600).
+
+---
+
+## Troubleshooting
+
+| Symptom | Try |
+|---|---|
+| "Couldn't see your face" | Open **Live view**; face a light source, not a window behind you |
+| Rejected at an angle | Re-scan in the lighting where you usually unlock; make sure all nine ring segments filled |
+| Rejected sometimes | **Settings → Match strictness**: lower it a few points (keep liveness on) |
+| Lock screen still asks for a password | Check **Account → Security checkup**: face enrolled with the new version, linked to this account, service running and up to date (`sudo systemctl restart facelock`) |
+| "Service offline" | `sudo systemctl status facelock`; the socket is `/tmp/facelock.sock` |
+| Camera busy | Close other apps using the webcam; only one unlock runs at a time |
+| Locked out after failures | Wait for the cooldown (5 minutes) or use your password |
+
+Logs and data live in `~/.facelock/` (`config.json`, `facelock.db`, `audit.log`).
+
+---
+
+## Command line
+
+```bash
+PYTHONPATH=. python3 Scripts/facelock_cli.py test-camera
+PYTHONPATH=. python3 Scripts/facelock_cli.py enroll --id me --name "My Name" --secret "<passphrase>"
+PYTHONPATH=. python3 Scripts/facelock_cli.py verify --id me --secret "<passphrase>"
+Linux/bin/facelock-auth --user <profile-id>
+```
+
+The CLI `enroll` runs the same guided multi-angle scan in the terminal.
+
+---
+
+## For developers
+
+Use the SDK from your own Python apps; it talks to the running service and needs no camera or ML dependencies:
+
+```bash
+pip install git+https://github.com/SubrataSaha8191/facelock_dev.git
+```
 
 ```python
 import facelock
 
-try:
-    print("Looking for admin face...")
-    
-    # This automatically triggers the camera and verifies against the fast background daemon
-    if facelock.authenticate():
-        print("✅ Access Granted: Welcome Admin!")
-        # Proceed with sensitive operations...
-    else:
-        print("❌ Access Denied: Face did not match.")
-        
-except ValueError as e:
-    print(f"User is not enrolled: {e}")
+if facelock.authenticate():
+    ...  # the owner is in front of the camera
 ```
 
-### Available Methods:
-- `facelock.authenticate(user_id=None)`: Triggers face capture and returns `True` if it matches.
-- `facelock.authenticate_detailed(user_id=None)`: Same, but returns the reason and score for a failure.
-- `facelock.is_enrolled(user_id=None)`: Returns `True` if the user has a usable facial profile.
-- `facelock.is_available()`: Returns `True` if the service is reachable.
+See the [SDK README](https://github.com/SubrataSaha8191/facelock_dev) for `authenticate_detailed()`, `is_enrolled()`, `is_available()` and the exceptions.
 
-*(Note: The FaceLock background daemon must be installed and running via `install_pam.sh` for the API to work securely without hogging camera resources).*
+### Project layout
 
+```text
+Core/
+  detection/      YuNet detector, head pose, quality gate
+  recognition/    SFace extractor, multi-angle templates
+  enrollment/     guided enrollment session
+  authentication/ engine, lockout, risk, password fallback
+  camera/         capture, streaming, low-light
+  account/        local profile + Google sign-in (PKCE)
+  storage/        encrypted SQLite
+Service/          background socket service (what PAM and the SDK call)
+Linux/            PAM helper, app gate, installer, systemd unit
+Dashboard/        desktop app (pywebview) and its web UI
+Scripts/          CLI, model fetcher
+Models/           ONNX models
+Tests/            pytest suite
+```
+
+### Tests
+
+```bash
+python3 -m pytest -q
+```
+
+The suite uses a temporary data directory and never touches `~/.facelock`.
 
 ---
 
-## 🛠 Troubleshooting unlock
+## Security notes
 
-| Symptom | Try |
-|---|---|
-| "Couldn't see your face" | Open **Live view** to see what the camera sees; face a light source, not a window behind you |
-| Rejected at an angle | Re-run enrollment in the lighting where you usually unlock; check all nine ring segments filled |
-| Still rejected sometimes | **Settings → Match strictness**: lower it a few points (keep liveness on) |
-| Slow to unlock | Raise nothing: the service stops as soon as it is sure. Lower **Unlock window** only if failed attempts feel too long |
+- Templates are encrypted at rest with AES-256-GCM. The key is derived from a built-in default secret, so treat this as protection against casual reading, not against someone with root access to your machine.
+- Failed attempts are rate limited (3 failures, 5 minute cooldown). No face, poor light and blurry frames do not count as failures.
+- The service listens on a local UNIX socket only.
 
-See [Docs/face_capture_pipeline.md](Docs/face_capture_pipeline.md) for how detection, enrollment and matching work.
+### Limits
+
+- **Liveness is lightweight.** The default check is a texture heuristic. A good-quality screen replay or printed photo is not reliably rejected by an RGB webcam alone. An IR or depth camera, or a trained presentation-attack model, would be needed for strong anti-spoofing.
+- Head-pose estimation uses a generic 3D head model. It is good for guiding enrollment, not for measurement.
+- One face profile per OS account for the lock screen.
+
+---
+
+## Documentation
+
+- [Face capture pipeline](Docs/face_capture_pipeline.md): how detection, enrollment and matching work
+- [Architecture](Docs/architecture.md) and [OS authentication](Docs/OS_Authentication_Architecture.md)
+- [Changelog](CHANGELOG.md)
+
+## License
+
+See [LICENSE](LICENSE).
