@@ -77,3 +77,19 @@
   --shadow-3: none;
   color-scheme: dark;
 }
+
+/* Fallbacks for embedded browsers without color-mix() (older Qt WebEngine / WebKit) */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  :root { --tone-bg: rgba(66,133,244,.14); }
+  .tone-blue   { --tone: #4285F4; --tone-bg: rgba(66,133,244,.16); }
+  .tone-red    { --tone: #EA4335; --tone-bg: rgba(234,67,53,.14); }
+  .tone-yellow { --tone: #E37400; --tone-bg: rgba(251,188,4,.22); }
+  .tone-green  { --tone: #34A853; --tone-bg: rgba(52,168,83,.16); }
+  .card { background: var(--container-low); }
+  .stat.tinted { background: var(--tone-bg); }
+  .bar-ico { background: var(--bar-tone, #4285F4); }
+  .rail-item.active .pill { background: var(--primary-container); color: var(--on-primary-container); }
+  .hero { background: var(--container-low); }
+  .acct-banner { background: var(--container-low); }
+  .glow::after, .glow:not(.stat)::before { display: none; }
+}

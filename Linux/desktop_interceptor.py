@@ -31,6 +31,7 @@ def _find_desktop_file(cmd: str) -> Path | None:
 
 def install_gate(app_name: str, cmd: str) -> bool:
     """Create a .desktop override that wraps cmd with facelock-app-gate."""
+    if not sys.platform.startswith("linux"): return False
     src = _find_desktop_file(cmd)
     if not src: return False
     LOCAL_APPS.mkdir(parents=True, exist_ok=True)
@@ -60,6 +61,7 @@ def install_gate(app_name: str, cmd: str) -> bool:
 
 def uninstall_gate(cmd: str) -> bool:
     """Remove the .desktop override, restoring the original launcher."""
+    if not sys.platform.startswith("linux"): return False
     src = _find_desktop_file_by_marker(cmd)
     if not src: return False
     backup = BACKUP_DIR / src.name
@@ -102,6 +104,7 @@ def _refresh_desktop_db():
 
 def ensure_autostart() -> bool:
     """Install an XDG autostart entry for the FaceLock auth service daemon."""
+    if not sys.platform.startswith("linux"): return False
     autostart_dir = Path.home() / ".config" / "autostart"
     autostart_dir.mkdir(parents=True, exist_ok=True)
     entry = autostart_dir / "facelock-daemon.desktop"

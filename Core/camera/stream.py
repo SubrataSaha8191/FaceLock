@@ -1,6 +1,7 @@
 """Continuous camera frame stream for unlock attempts."""
 
 import glob
+import os
 import re
 import time
 from typing import Iterator, List, Optional
@@ -12,6 +13,16 @@ from Core.config.settings import CameraSettings
 from Core.utils.logger import get_logger
 
 logger = get_logger("CameraStream")
+
+
+def _open_capture(device: int) -> "cv2.VideoCapture":
+    """Open a camera; DirectShow on Windows (the default backend is slow and flaky there)."""
+    if os.name == "nt":
+        cap = cv2.VideoCapture(device, cv2.CAP_DSHOW)
+        if cap.isOpened():
+            return cap
+        cap.release()
+    return cv2.VideoCapture(device)
 
 
 class CameraStream:
@@ -29,7 +40,7 @@ class CameraStream:
 
     def open(self) -> bool:
         for device in self._candidate_devices():
-            cap = cv2.VideoCapture(device)
+            cap = _open_capture(device)
             if not cap.isOpened():
                 cap.release()
                 continue

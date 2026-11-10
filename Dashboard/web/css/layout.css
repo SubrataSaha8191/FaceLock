@@ -149,3 +149,6 @@
 .bar-ico .i { position: relative; z-index: 1; width: 28px; height: 28px; stroke-width: 0; filter: none; }
 .rail-item .pill .i, .rail-account .i { stroke-width: 0; }
 .rail-item .pill .i { width: 26px; height: 26px; }
+
+/* Very short windows: keep the camera ring from forcing a huge page */
+@media (max-height: 640px) { .ring-stage { width: min(100%, 360px); } .hero { min-height: 0; } }

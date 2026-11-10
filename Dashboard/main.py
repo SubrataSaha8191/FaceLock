@@ -31,7 +31,8 @@ def main() -> int:
         background_color="#F8FAFD",
     )
 
-    webview.start(gui="qt", debug=False)
+    # Qt on Linux; on Windows pywebview uses the system WebView2 (Edge) by default.
+    webview.start(gui="qt" if sys.platform.startswith("linux") else None, debug=False)
     return 0
 
 

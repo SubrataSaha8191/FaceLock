@@ -1,0 +1,8 @@
+LICENSE
+README.md
+pyproject.toml
+facelock.egg-info/PKG-INFO
+facelock.egg-info/SOURCES.txt
+facelock.egg-info/dependency_links.txt
+facelock.egg-info/requires.txt
+facelock.egg-info/top_level.txt

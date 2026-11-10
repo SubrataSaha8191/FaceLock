@@ -1,5 +1,6 @@
 """OpenCV implementation of video frame acquisition."""
 
+import os
 from typing import Optional, Tuple
 import cv2
 import numpy as np
@@ -19,7 +20,7 @@ class OpenCVCamera(ICamera):
         """Initialize camera hardware."""
         if self.is_opened():
             return True
-        self.cap = cv2.VideoCapture(self.settings.device_id)
+        self.cap = cv2.VideoCapture(self.settings.device_id, cv2.CAP_DSHOW) if os.name == "nt" else cv2.VideoCapture(self.settings.device_id)
         if not self.cap.isOpened():
             return False
 

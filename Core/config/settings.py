@@ -68,7 +68,11 @@ class SecuritySettings(BaseModel):
 def get_default_data_dir() -> Path:
     import os
     if "FACELOCK_DATA_DIR" in os.environ: return Path(os.environ["FACELOCK_DATA_DIR"])
-    if os.geteuid() == 0 or Path.home() == Path("/root"):
+    if os.name == "nt":
+        base = os.environ.get("LOCALAPPDATA")
+        return (Path(base) if base else Path.home() / "AppData" / "Local") / "FaceLock"
+    # When the service runs as root, keep data in the desktop user's home.
+    if hasattr(os, "geteuid") and (os.geteuid() == 0 or Path.home() == Path("/root")):
         u = os.environ.get("SUDO_USER") or os.environ.get("DOAS_USER")
         if u and (Path("/home") / u).exists(): return Path("/home") / u / ".facelock"
         homes = [h for h in Path("/home").glob("*") if h.is_dir() and not h.name.startswith(".")]

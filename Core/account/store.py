@@ -6,6 +6,8 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from Core.utils.fs_security import restrict_to_owner
+
 
 class AccountStore:
     """JSON file in the data directory (mode 0600). Never stores OAuth tokens."""
@@ -26,6 +28,7 @@ class AccountStore:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
         os.replace(tmp, self.path)
+        restrict_to_owner(self.path)  # chmod 0600 on POSIX, owner-only ACL on Windows
 
     # ---- public view (safe for the UI) ----
     def public(self) -> Dict[str, Any]:

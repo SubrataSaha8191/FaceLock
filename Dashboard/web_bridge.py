@@ -12,6 +12,7 @@ from Core.authentication.auth_engine import AuthenticationEngine
 from Core.liveness.texture_analyzer import TextureAnalyzer
 from Core.utils.audit_logger import AuditLogger
 from Core.enrollment import EnrollmentSession
+from Core.utils import ipc
 from Core.utils.icon_resolver import IconResolver
 from Core.account import AccountStore, GoogleSignIn, GoogleOAuthError
 from Core.detection.quality import assess_face
@@ -36,7 +37,8 @@ class FaceLockWebBridge:
         self._enroll = None
         self._verify = None
         self._verify_user = None
-        self._start_daemon(); ensure_autostart()
+        self._start_daemon()
+        if os.name != "nt": ensure_autostart()
 
     def get_users(self) -> List[Dict[str, Any]]:
         out = []
@@ -64,7 +66,7 @@ class FaceLockWebBridge:
             "authTimeout": sec.auth_timeout_seconds,
             "requiredMatches": sec.required_matches,
             "daemonActive": self._daemon_alive(), "daemonCurrent": self._daemon_info()["current"],
-            "socketPath": "/tmp/facelock.sock",
+            "socketPath": ipc.default_address(),
             "detector": "YuNet", "recognizer": "SFace 128-d",
         }
 
@@ -126,15 +128,9 @@ class FaceLockWebBridge:
 
     def _daemon_info(self) -> Dict[str, bool]:
         """Is the unlock service reachable, and is it the current (face-model 2) version?"""
-        import socket as sock
+        from Service.auth.service_client import ServiceClient
         try:
-            s = sock.socket(sock.AF_UNIX, sock.SOCK_STREAM)
-            s.settimeout(1.0)
-            s.connect("/tmp/facelock.sock")
-            s.sendall(json.dumps({"action": "ping"}).encode())
-            data = s.recv(4096).decode() or "{}"
-            s.close()
-            resp = json.loads(data)
+            resp = ServiceClient(timeout=1.5).send_request({"action": "ping"})
             return {"alive": True, "current": bool(resp.get("result")) and bool(resp.get("ready", True))}
         except Exception:
             return {"alive": False, "current": False}
@@ -324,15 +320,7 @@ class FaceLockWebBridge:
         return f"data:image/jpeg;base64,{base64.b64encode(buf).decode('ascii')}"
 
     def _daemon_alive(self) -> bool:
-        import socket as sock
-        try:
-            s = sock.socket(sock.AF_UNIX, sock.SOCK_STREAM)
-            s.settimeout(0.3)
-            s.connect("/tmp/facelock.sock")
-            s.close()
-            return True
-        except Exception:
-            return False
+        return ipc.probe(timeout=0.3)
 
     def delete_user(self, user_id: str) -> Dict:
         ok = self.storage.delete_user(user_id)
@@ -385,6 +373,8 @@ class FaceLockWebBridge:
         return getattr(self.settings, "protected_apps", [])
 
     def add_protected_app(self, name: str, cmd: str, icon: str, icon_name: str = "") -> Dict[str, Any]:
+        if os.name == "nt":
+            return {"ok": False, "msg": "Protected apps are not available on Windows yet"}
         aid = f"app_{len(self.get_protected_apps()) + 1}"
         apps = list(self.get_protected_apps()) + [{"id": aid, "name": name, "cmd": cmd, "icon": icon or "app", "icon_name": icon_name or ""}]
         self.settings.protected_apps = apps
@@ -420,6 +410,9 @@ class FaceLockWebBridge:
         return self._encode(frame)
 
     def _start_daemon(self):
-        import socket as sock
-        try: s = sock.socket(sock.AF_UNIX, sock.SOCK_STREAM); s.connect("/tmp/facelock.sock"); s.close()
-        except Exception: subprocess.Popen([sys.executable, str(Path(__file__).resolve().parent.parent / "Service" / "auth" / "auth_service.py")], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if ipc.probe(timeout=0.5):
+            return
+        kwargs = {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
+        if os.name == "nt":
+            kwargs["creationflags"] = 0x08000000  # CREATE_NO_WINDOW
+        subprocess.Popen([sys.executable, str(Path(__file__).resolve().parent.parent / "Service" / "auth" / "auth_service.py")], **kwargs)

@@ -21,10 +21,11 @@ from Core.recognition.sface_extractor import SFaceExtractor
 from Core.storage.encrypted_sqlite_storage import EncryptedSQLiteStorage
 from Core.authentication.auth_engine import AuthenticationEngine
 from Core.liveness.texture_analyzer import TextureAnalyzer
+from Core.utils import ipc
 from Core.utils.logger import get_logger
 
 logger = get_logger("AuthService")
-DEFAULT_SOCKET_PATH = "/tmp/facelock.sock"
+DEFAULT_SOCKET_PATH = ipc.default_address()  # /tmp/facelock.sock on POSIX, "auto" (loopback TCP + token) on Windows
 SERVICE_VERSION = "2.0"
 
 
@@ -33,6 +34,8 @@ class AuthService:
 
     def __init__(self, socket_path: str = DEFAULT_SOCKET_PATH, settings: Optional[SystemSettings] = None):
         self.socket_path = socket_path
+        self.address = socket_path      # resolved after start() (TCP picks its port then)
+        self.token = None               # per-run secret on TCP transports
         self.config_loader = ConfigLoader()
         self.settings: SystemSettings = settings or self.config_loader.load()
 
@@ -59,16 +62,11 @@ class AuthService:
         self._running = False
 
     def start(self) -> None:
-        """Start the UNIX socket server."""
-        self._cleanup_socket()
-        self._server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self._server.bind(self.socket_path)
-        try: os.chmod(self.socket_path, 0o666)
-        except Exception: pass
-        self._server.listen(5)
+        """Start the local socket server (UNIX socket on POSIX, authenticated loopback TCP on Windows)."""
+        self._server, self.address, self.token = ipc.bind_server(self.socket_path, self.settings.data_dir)
         self._server.settimeout(1.0)
         self._running = True
-        logger.info(f"Auth service listening on {self.socket_path}")
+        logger.info(f"Auth service listening on {self.address}")
 
         while self._running:
             try:
@@ -77,6 +75,8 @@ class AuthService:
                 thread.start()
             except socket.timeout:
                 continue
+            except OSError:
+                break  # server socket closed by stop()
 
     def stop(self) -> None:
         """Shutdown the socket server."""
@@ -92,7 +92,12 @@ class AuthService:
             if not data.strip():
                 return  # availability probe: client connected and hung up
             try:
-                response = self._process_request(json.loads(data))
+                request = json.loads(data)
+                if not ipc.token_ok(self.token, request.get("token")):
+                    response = {"result": False, "reason": "unauthorized", "message": "Unauthorized"}
+                    conn.sendall(json.dumps(response).encode("utf-8"))
+                    return
+                response = self._process_request(request)
             except Exception as e:
                 logger.error(f"Request failed: {e}")
                 response = {"result": False, "message": str(e)}
@@ -214,8 +219,10 @@ class AuthService:
         }
 
     def _cleanup_socket(self) -> None:
-        """Remove stale socket file."""
-        if os.path.exists(self.socket_path):
+        """Remove the stale socket file (POSIX) or the published endpoint (TCP)."""
+        if self.token is not None:
+            ipc.remove_endpoint(self.settings.data_dir)
+        elif os.path.exists(self.socket_path):
             try: os.unlink(self.socket_path)
             except Exception: pass
 

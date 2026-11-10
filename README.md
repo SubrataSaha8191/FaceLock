@@ -11,7 +11,8 @@ FaceLock lets you unlock your lock screen, approve `sudo`, and gate sensitive ap
 - **Works from any angle.** A guided scan captures nine head directions (straight ahead plus eight around it). Unlock accepts any of them.
 - **Modern recognition.** YuNet face detection and SFace deep embeddings, with low-light enhancement and quality checks.
 - **Patient, not twitchy.** An unlock attempt watches the camera for a few seconds and succeeds as soon as it is sure. Bad light or no face in view never counts toward a lockout.
-- **System-wide.** PAM integration for `sudo`, GDM and LightDM lock screens, plus a launcher gate for protected apps.
+- **System-wide on Linux.** PAM integration for `sudo`, GDM and LightDM lock screens, plus a launcher gate for protected apps.
+- **Windows (early).** The service, dashboard and SDK run on Windows; signing in to Windows with your face is not available yet.
 - **A dashboard you will want to open.** Guided face scan, one-click unlock test, live detector view, settings, activity, light and dark themes.
 - **Private by design.** Face data stays on your machine, encrypted at rest. Google sign-in is optional and only used to show your name and photo.
 - **Developer SDK.** A tiny Python client ([`facelock_dev`](https://github.com/SubrataSaha8191/facelock_dev)) so your own apps can ask "is this the owner?".
@@ -20,7 +21,7 @@ FaceLock lets you unlock your lock screen, approve `sudo`, and gate sensitive ap
 
 ## Requirements
 
-- Linux with systemd and PAM (the installer configures the GDM and LightDM login stacks and `sudo`)
+- **Linux** with systemd and PAM (the installer configures the GDM and LightDM login stacks and `sudo`), or **Windows 10/11** (early support, see [Windows](#windows))
 - Python 3.9 or newer
 - A webcam
 - About 40 MB of disk for the face models
@@ -73,6 +74,18 @@ This installs the background service and adds FaceLock to the PAM stacks. Open a
 > ```
 >
 > Until you do both, `sudo` and the lock screen fall back to your password. The dashboard's **Security checkup** tells you when the service is running old code.
+
+---
+
+## Windows
+
+Windows support is early: recognition, the unlock service, the dashboard and the SDK work, but **sign-in screen unlock and protected apps do not exist yet**.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File Windows\install_windows.ps1
+```
+
+It was tested on Windows Python under Wine (test suites and an end-to-end run), not yet on a real Windows machine, webcam or WebView2. Details, differences from Linux and the roadmap are in [Windows/README.md](Windows/README.md).
 
 ---
 
@@ -130,11 +143,11 @@ The client settings and linked profile are stored in `~/.facelock/account.json` 
 | Rejected at an angle | Re-scan in the lighting where you usually unlock; make sure all nine ring segments filled |
 | Rejected sometimes | **Settings → Match strictness**: lower it a few points (keep liveness on) |
 | Lock screen still asks for a password | Check **Account → Security checkup**: face enrolled with the new version, linked to this account, service running and up to date (`sudo systemctl restart facelock`) |
-| "Service offline" | `sudo systemctl status facelock`; the socket is `/tmp/facelock.sock` |
+| "Service offline" | Linux: `sudo systemctl status facelock`; the socket is `/tmp/facelock.sock`. Windows: start **FaceLock Service** from the Startup folder or re-run the installer; the endpoint file is `%LOCALAPPDATA%\FaceLock\endpoint.json` |
 | Camera busy | Close other apps using the webcam; only one unlock runs at a time |
 | Locked out after failures | Wait for the cooldown (5 minutes) or use your password |
 
-Logs and data live in `~/.facelock/` (`config.json`, `facelock.db`, `audit.log`).
+Logs and data live in `~/.facelock/` on Linux and `%LOCALAPPDATA%\FaceLock` on Windows (`config.json`, `facelock.db`, `audit.log`).
 
 ---
 
@@ -181,6 +194,7 @@ Core/
   storage/        encrypted SQLite
 Service/          background socket service (what PAM and the SDK call)
 Linux/            PAM helper, app gate, installer, systemd unit
+Windows/          installer scripts and the Credential Provider bridge
 Dashboard/        desktop app (pywebview) and its web UI
 Scripts/          CLI, model fetcher
 Models/           ONNX models
@@ -201,7 +215,7 @@ The suite uses a temporary data directory and never touches `~/.facelock`.
 
 - Templates are encrypted at rest with AES-256-GCM. The key is derived from a built-in default secret, so treat this as protection against casual reading, not against someone with root access to your machine.
 - Failed attempts are rate limited (3 failures, 5 minute cooldown). No face, poor light and blurry frames do not count as failures.
-- The service listens on a local UNIX socket only.
+- The service listens locally only: a UNIX socket on Linux, `127.0.0.1` with a secret per-user token on Windows. Requests without the token are refused.
 
 ### Limits
 

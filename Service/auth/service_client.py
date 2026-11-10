@@ -4,23 +4,27 @@ import json
 import socket
 from typing import Any, Dict, Optional
 
-DEFAULT_SOCKET_PATH = "/tmp/facelock.sock"
+from Core.utils import ipc
+
+DEFAULT_SOCKET_PATH = ipc.default_address()
 DEFAULT_TIMEOUT = 25.0  # an unlock attempt may watch the camera for several seconds
 
 
 class ServiceClient:
     """Sends JSON authentication requests to the FaceLock auth service."""
 
-    def __init__(self, socket_path: str = DEFAULT_SOCKET_PATH, timeout: float = DEFAULT_TIMEOUT):
-        self.socket_path = socket_path
+    def __init__(self, socket_path: Optional[str] = None, timeout: float = DEFAULT_TIMEOUT,
+                 token: Optional[str] = None):
+        self.socket_path = socket_path  # None = resolve per call (env FACELOCK_SOCKET, else platform default)
         self.timeout = timeout
+        self.token = token
 
     def send_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
         """Send a JSON request and return the JSON response."""
-        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        sock.settimeout(self.timeout)
+        sock, token = ipc.open_client(self.socket_path, self.token, self.timeout)
         try:
-            sock.connect(self.socket_path)
+            if token:
+                request = {**request, "token": token}
             sock.sendall(json.dumps(request).encode("utf-8"))
             chunks = []
             while True:

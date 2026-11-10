@@ -3,6 +3,8 @@
 import os
 import numpy as np
 import pytest
+
+pytest.importorskip("PySide6")  # Qt is a Linux-only dependency; Windows uses the system WebView
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QGuiApplication, QImage
 

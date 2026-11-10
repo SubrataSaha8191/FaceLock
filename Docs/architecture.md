@@ -36,7 +36,7 @@
 
                     OS INTEGRATION LAYER
  ┌────────────────────────────────────────────────────────────┐
- │           Background Auth Service (UNIX Socket)             │
+ │        Background Auth Service (local socket / loopback)     │
  │                 Service/auth/auth_service.py                │
  └───────┬────────────────────────────────────┬───────────────┘
          │                                    │
@@ -57,4 +57,4 @@
 - **Lockout Policy**: Per-user lockout with automatic cooldown
 - **Password Fallback**: PBKDF2-hashed password for fallback auth
 - **Audit Trail**: Structured JSON log for all security events
-- **OS Integration**: UNIX socket service for PAM/Credential Provider
+- **OS Integration**: local service for PAM and the Credential Provider bridge. Linux uses a UNIX socket; Windows (which has no `AF_UNIX` in Python) uses loopback TCP with a per-user secret token published in `endpoint.json`

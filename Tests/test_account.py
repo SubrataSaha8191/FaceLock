@@ -31,7 +31,9 @@ def test_store_is_private_and_never_exposes_secret(tmp_path):
     s = AccountStore(tmp_path)
     s.set_client("cid.apps.googleusercontent.com", "shh")
     s.set_local_name("Ada")
-    assert stat.S_IMODE(os.stat(s.path).st_mode) == 0o600
+    if os.name != "nt":
+        assert stat.S_IMODE(os.stat(s.path).st_mode) == 0o600
+    # Windows has no POSIX modes; restrict_to_owner() applies an owner-only ACL there (best effort).
     pub = s.public()
     assert pub["hasClient"] and pub["hasSecret"] and "shh" not in json.dumps(pub)
     assert pub["localName"] == "Ada"

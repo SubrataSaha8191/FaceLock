@@ -25,7 +25,9 @@ To solve permission, resource, and latency issues, FaceLock runs as a persistent
 
 - **Camera Permissions**: Running as root ensures the service always has access to `/dev/video*` regardless of which user initiates the auth request.
 - **Resource Management**: It holds the authentication engine in memory and avoids the overhead of loading ML models on every single `sudo` command.
-- **Socket Communication**: It listens on `/tmp/facelock.sock` with read/write permissions open to everyone (`0o666`), allowing the `pam_exec` script to communicate with it.
+- **Socket Communication**: It listens on `/tmp/facelock.sock` with read/write permissions open to everyone (`0o666`), allowing the `pam_exec` script to communicate with it. On Windows there is no UNIX socket in Python, so the service listens on `127.0.0.1` instead and requires a per-user token (see `Windows/README.md`).
+- **Linking profiles to accounts**: each face profile is linked to an OS account when it is enrolled or re-scanned. PAM, the app gate and the SDK look the profile up through that link, so the profile's name or ID does not have to match the login name.
+- **Version check**: a `ping` request reports the service version and readiness, so the dashboard can tell when the running service is old code.
 - **Data Directory Resolution**: It dynamically resolves the database path to the enrolling user's `.facelock` directory, avoiding mismatched databases when running under root.
 
 ## 4. Application Protection (`facelock-app-gate`)

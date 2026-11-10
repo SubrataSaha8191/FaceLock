@@ -17,7 +17,7 @@ dependencies = [
     "cryptography>=41.0.0",
     "pydantic>=2.0.0",
     "pyyaml>=6.0",
-    "PySide6>=6.5.0",
+    "PySide6>=6.5.0; sys_platform != 'win32'",   # Qt is Linux-only; Windows uses the system WebView2
     "pywebview>=5.0",
 ]
 
@@ -26,6 +26,11 @@ dev = [
     "pytest>=7.0.0",
     "ruff>=0.1.0",
 ]
+
+[tool.setuptools]
+# FaceLock is an application run from its checkout (the entry scripts add the project root
+# to sys.path), so there is nothing to package: `pip install -e .` just installs dependencies.
+packages = []
 
 [tool.pytest.ini_options]
 testpaths = ["Tests"]
