@@ -7,8 +7,8 @@ from PySide6.QtCore import QObject, Signal, Slot, QTimer
 from Core.config.settings import SystemSettings
 from Core.config.loader import ConfigLoader
 from Core.camera.opencv_camera import OpenCVCamera
-from Core.detection.cascade_detector import CascadeDetector
-from Core.recognition.feature_extractor import FeatureExtractor
+from Core.detection.yunet_detector import YuNetDetector
+from Core.recognition.sface_extractor import SFaceExtractor
 from Core.storage.encrypted_sqlite_storage import EncryptedSQLiteStorage
 from Core.authentication.auth_engine import AuthenticationEngine
 from Core.liveness.texture_analyzer import TextureAnalyzer
@@ -31,8 +31,8 @@ class FaceLockBridge(QObject):
 
         self.storage = EncryptedSQLiteStorage(self.settings.db_path)
         self.camera = OpenCVCamera(self.settings.camera)
-        self.detector = CascadeDetector()
-        self.extractor = FeatureExtractor()
+        self.detector = YuNetDetector(score_threshold=self.settings.security.detector_score_threshold)
+        self.extractor = SFaceExtractor()
         self.liveness = TextureAnalyzer(self.settings.liveness.texture_threshold)
 
         self.engine = AuthenticationEngine(

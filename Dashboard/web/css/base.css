@@ -1,47 +1,38 @@
-/* ═══ Plain Canvas Design System — Dark Mode #212121 ═══ */
-:root {
-    --bg: #212121;
-    --canvas-card: #212121;
-    --text-primary: #F8FAFC;
-    --text-dim: #94A3B8;
-    --text-ghost: #64748B;
-    --border: rgba(255, 255, 255, 0.12);
-    
-    /* Vibrant Accent Gradients for Text & Buttons */
-    --blue-grad: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
-    --orange-grad: linear-gradient(135deg, #FF5722 0%, #FF7000 100%);
-    --green-accent: #10B981;
-    --green-bright: #1EFC51;
-    
-    --font: 'Inter', -apple-system, sans-serif;
-    --display: 'Syne', sans-serif;
-    --pill: 999px;
-    --radius: 20px;
-}
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body {
-    height: 100%; background: #212121; color: var(--text-primary);
-    font-family: var(--font); font-size: 14px; line-height: 1.5;
-    -webkit-font-smoothing: antialiased; overflow: hidden;
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: var(--font); font-size: 14px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased; overflow: hidden;
+  display: flex;
 }
-body { display: flex; position: relative; background: #212121; }
-
-::-webkit-scrollbar { width: 4px; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: none; }
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+::selection { background: var(--primary-container); }
+/* Scrollbars stay out of sight until you hover a scrollable area, then appear as a slim pill. */
+* { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+*:hover { scrollbar-color: var(--outline) transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: transparent; border-radius: 8px; border: 2px solid transparent; background-clip: content-box; transition: background .2s; }
+*:hover::-webkit-scrollbar-thumb { background: var(--outline); background-clip: content-box; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
 
-/* Bold Spline Editorial Typography */
-.hero-number {
-    font-family: var(--display); font-weight: 800; font-style: italic;
-    font-size: 64px; letter-spacing: -2px; line-height: 0.9;
-    background: var(--blue-grad); -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent; background-clip: text; display: block;
-}
-.hero-label {
-    font-family: var(--display); font-size: 11px; font-weight: 800;
-    letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px;
-}
-.section-title { font-family: var(--display); font-size: 18px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-primary); }
-.meta-label { font-family: var(--display); font-size: 10px; font-weight: 800; letter-spacing: 2px; color: #60A5FA; text-transform: uppercase; }
-.meta-value { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+.i { width: 24px; height: 24px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.i.fill { fill: currentColor; stroke: none; }
+.i.sm { width: 18px; height: 18px; }
+.i.lg { width: 32px; height: 32px; }
+
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; letter-spacing: -.01em; line-height: 1.2; }
+.display { font-family: var(--font-display); font-size: 40px; font-weight: 700; letter-spacing: -.03em; line-height: 1.08; }
+.headline { font-family: var(--font-display); font-size: 24px; font-weight: 700; letter-spacing: -.02em; }
+.title { font-family: var(--font-display); font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+.label { font-family: var(--font-display); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); }
+.body-2 { color: var(--text-2); }
+.muted { color: var(--text-3); }
+.mono { font-family: var(--font-mono); font-size: 12px; letter-spacing: -.01em; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* One flat, static colour behind the rail, top bar and page frame. */
+body { background: var(--bg); }
+#rail, #appbar { background: transparent; }

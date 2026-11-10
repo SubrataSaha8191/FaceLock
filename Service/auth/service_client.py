@@ -5,7 +5,7 @@ import socket
 from typing import Any, Dict, Optional
 
 DEFAULT_SOCKET_PATH = "/tmp/facelock.sock"
-DEFAULT_TIMEOUT = 10.0
+DEFAULT_TIMEOUT = 25.0  # an unlock attempt may watch the camera for several seconds
 
 
 class ServiceClient:
@@ -22,8 +22,17 @@ class ServiceClient:
         try:
             sock.connect(self.socket_path)
             sock.sendall(json.dumps(request).encode("utf-8"))
-            data = sock.recv(4096).decode("utf-8")
-            return json.loads(data)
+            chunks = []
+            while True:
+                chunk = sock.recv(65536)
+                if not chunk:
+                    break
+                chunks.append(chunk)
+                try:
+                    return json.loads(b"".join(chunks).decode("utf-8"))
+                except ValueError:
+                    continue
+            return json.loads(b"".join(chunks).decode("utf-8"))
         finally:
             sock.close()
 
@@ -44,12 +53,15 @@ class ServiceClient:
         })
         return resp.get("result", False)
 
-    def authenticate_face(self, user_id: str, secret: str = "MasterKey123") -> bool:
-        """Authenticate user via live biometric camera frame."""
-        resp = self.send_request({
+    def authenticate_face_detailed(self, user_id: str, secret: str = "MasterKey123") -> Dict[str, Any]:
+        """Authenticate and return the full response (result, similarity, reason, message)."""
+        return self.send_request({
             "action": "authenticate_face",
             "user_id": user_id,
             "secret": secret,
         })
-        return resp.get("result", False)
+
+    def authenticate_face(self, user_id: str, secret: str = "MasterKey123") -> bool:
+        """Authenticate user via live biometric camera frames."""
+        return bool(self.authenticate_face_detailed(user_id, secret).get("result", False))
 

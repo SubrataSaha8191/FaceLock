@@ -8,8 +8,8 @@ class CameraSettings(BaseModel):
     """Configuration options for video capture device."""
 
     device_id: int = Field(default=0, description="Camera index or ID")
-    frame_width: int = Field(default=640, description="Target frame width")
-    frame_height: int = Field(default=480, description="Target frame height")
+    frame_width: int = Field(default=1280, description="Target frame width")
+    frame_height: int = Field(default=720, description="Target frame height")
     fps: int = Field(default=30, description="Target capture FPS")
 
 
@@ -33,7 +33,28 @@ class SecuritySettings(BaseModel):
     """Configuration options for security, thresholds, and algorithms."""
 
     matching_threshold: float = Field(
-        default=0.6, description="Similarity threshold for authentication"
+        default=0.40,
+        description="Cosine-similarity threshold for the SFace embedding (0.363 is the "
+        "published equal-error point; higher is stricter)",
+    )
+    required_matches: int = Field(
+        default=2, ge=1, le=5,
+        description="Matching frames (of the last three) needed to unlock",
+    )
+    auth_timeout_seconds: float = Field(
+        default=6.0, ge=1.0, le=20.0,
+        description="How long one unlock attempt keeps looking at the camera",
+    )
+    min_face_px: int = Field(
+        default=70, ge=30, description="Smallest face width (pixels) accepted when unlocking"
+    )
+    detector_score_threshold: float = Field(
+        default=0.7, ge=0.3, le=0.99, description="Minimum face-detector confidence"
+    )
+    adaptive_learning: bool = Field(
+        default=True,
+        description="Add strong, confident unlock frames to the template so it follows "
+        "gradual changes (lighting, glasses, haircut)",
     )
     max_auth_attempts: int = Field(default=3, description="Max failed attempts before lock")
     liveness_required: bool = Field(default=True, description="Enable liveness verification")
@@ -54,9 +75,13 @@ def get_default_data_dir() -> Path:
         if homes: return homes[0] / ".facelock"
     return Path.home() / ".facelock"
 
+CONFIG_VERSION = 2  # 2 = SFace deep-embedding thresholds
+
+
 class SystemSettings(BaseModel):
     """Global system configuration settings."""
 
+    config_version: int = Field(default=CONFIG_VERSION, description="Settings schema version")
     data_dir: Path = Field(
         default_factory=get_default_data_dir, description="Root directory for application data"
     )

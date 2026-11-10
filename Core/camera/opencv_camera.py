@@ -23,6 +23,8 @@ class OpenCVCamera(ICamera):
         if not self.cap.isOpened():
             return False
 
+        self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
+        self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.settings.frame_width)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.settings.frame_height)
         self.cap.set(cv2.CAP_PROP_FPS, self.settings.fps)

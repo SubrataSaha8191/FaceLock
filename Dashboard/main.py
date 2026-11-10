@@ -22,12 +22,13 @@ def main() -> int:
     html_file = Path(__file__).parent / "web" / "index.html"
 
     window = webview.create_window(
-        title="FaceLock Platform",
+        title="FaceLock",
         url=str(html_file.resolve()),
         js_api=api,
         width=1240,
         height=780,
-        background_color="#0A0A0A",
+        min_size=(820, 620),
+        background_color="#F8FAFD",
     )
 
     webview.start(gui="qt", debug=False)

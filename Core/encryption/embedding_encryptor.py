@@ -21,6 +21,17 @@ class EmbeddingEncryptor:
         # Store nonce + ciphertext combined
         return nonce + ciphertext
 
+    def encrypt_bytes(self, payload: bytes) -> bytes:
+        """Encrypt an arbitrary payload (nonce + ciphertext)."""
+        nonce = os.urandom(12)
+        return nonce + self.aesgcm.encrypt(nonce, payload, None)
+
+    def decrypt_bytes(self, encrypted_data: bytes) -> bytes:
+        """Decrypt a payload produced by :meth:`encrypt_bytes`."""
+        if len(encrypted_data) < 13:
+            raise ValueError("Invalid ciphertext length.")
+        return self.aesgcm.decrypt(encrypted_data[:12], encrypted_data[12:], None)
+
     def decrypt_vector(self, encrypted_data: bytes, vector_dim: int = 128) -> np.ndarray:
         """Decrypt payload back into NumPy floating point array."""
         if len(encrypted_data) < 13:

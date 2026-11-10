@@ -6,16 +6,18 @@ import cv2
 
 from Core.config.settings import SystemSettings
 from Core.camera.opencv_camera import OpenCVCamera
-from Core.detection.cascade_detector import CascadeDetector
-from Core.recognition.feature_extractor import FeatureExtractor
+from Core.camera.stream import CameraStream
+from Core.detection.yunet_detector import YuNetDetector
+from Core.enrollment import EnrollmentSession
+from Core.recognition.sface_extractor import SFaceExtractor
 from Core.storage.encrypted_sqlite_storage import EncryptedSQLiteStorage
 from Core.authentication.auth_engine import AuthenticationEngine
 
 
 def setup_engine(settings: SystemSettings) -> AuthenticationEngine:
     """Initialize system components."""
-    detector = CascadeDetector()
-    extractor = FeatureExtractor()
+    detector = YuNetDetector(score_threshold=settings.security.detector_score_threshold)
+    extractor = SFaceExtractor()
     storage = EncryptedSQLiteStorage(settings.db_path)
     return AuthenticationEngine(settings, detector, extractor, storage)
 
@@ -23,7 +25,7 @@ def setup_engine(settings: SystemSettings) -> AuthenticationEngine:
 def cmd_test_camera(settings: SystemSettings) -> None:
     """Test webcam capture and face detection."""
     camera = OpenCVCamera(settings.camera)
-    detector = CascadeDetector()
+    detector = YuNetDetector()
     if not camera.open():
         print("Error: Unable to access camera.")
         return
@@ -66,28 +68,36 @@ def main() -> None:
         cmd_test_camera(settings)
     elif args.command == "enroll":
         engine = setup_engine(settings)
-        camera = OpenCVCamera(settings.camera)
-        if camera.open():
-            print("Look into camera for enrollment...")
-            for _ in range(10):  # Warmup
-                camera.read_frame()
-            ret, frame = camera.read_frame()
-            camera.release()
-            if ret and frame is not None:
-                ok = engine.enroll_user(args.id, args.name, args.secret, frame)
-                print("Enrollment successful!" if ok else "Enrollment failed.")
+        session = EnrollmentSession(engine.detector, engine.extractor)
+        with CameraStream(settings.camera) as stream:
+            if stream.cap is None:
+                print("Error: Unable to access camera.")
+                return
+            print("Look at the camera, then slowly move your head in a circle.")
+            last_hint = ""
+            for frame in stream.frames(timeout=120):
+                st = session.process(frame)
+                if st.hint != last_hint:
+                    print(f"  [{int(st.progress * 100):3d}%] {st.hint}")
+                    last_hint = st.hint
+                if session.complete:
+                    break
+        if session.can_finish:
+            ok = engine.enroll_template(args.id, args.name, args.secret, session.build_template())
+            print("Enrollment successful!" if ok else "Enrollment failed.")
+        else:
+            print("Enrollment incomplete: not enough angles captured.")
     elif args.command == "verify":
         engine = setup_engine(settings)
-        camera = OpenCVCamera(settings.camera)
-        if camera.open():
-            print("Look into camera for verification...")
-            for _ in range(10):
-                camera.read_frame()
-            ret, frame = camera.read_frame()
-            camera.release()
-            if ret and frame is not None:
-                passed, score = engine.authenticate_user(args.id, args.secret, frame)
-                print(f"Auth result: {'PASSED' if passed else 'FAILED'} (Score: {score:.4f})")
+        timeout = settings.security.auth_timeout_seconds
+        with CameraStream(settings.camera) as stream:
+            if stream.cap is None:
+                print("Error: Unable to access camera.")
+                return
+            print("Look into the camera for verification...")
+            res = engine.authenticate_frames(args.id, args.secret, stream.frames(timeout), timeout)
+        print(f"Auth result: {'PASSED' if res.ok else 'FAILED'} "
+              f"(Score: {res.score:.4f}, {res.message})")
     else:
         parser.print_help()
 

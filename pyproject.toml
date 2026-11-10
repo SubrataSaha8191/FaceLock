@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "facelock"
-version = "0.1.0"
+version = "2.0.0"
 description = "Cross-platform biometric face authentication platform"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -18,6 +18,7 @@ dependencies = [
     "pydantic>=2.0.0",
     "pyyaml>=6.0",
     "PySide6>=6.5.0",
+    "pywebview>=5.0",
 ]
 
 [project.optional-dependencies]

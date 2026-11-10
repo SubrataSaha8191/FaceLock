@@ -1,0 +1,79 @@
+/* FaceLock design tokens: Material 3 structure with Google's four brand colours. */
+:root {
+  --g-blue: #4285F4;
+  --g-red: #EA4335;
+  --g-yellow: #FBBC04;
+  --g-green: #34A853;
+
+  --bg: #F8FAFD;
+  --surface: #FFFFFF;
+  --container-low: #F3F6FC;
+  --container: #EAF0FA;
+  --container-high: #E1E9F6;
+  --outline: #C4C7C5;
+  --outline-soft: #E3E8F0;
+
+  --text: #1F1F1F;
+  --text-2: #444746;
+  --text-3: #6B6F76;
+
+  --primary: #0B57D0;
+  --on-primary: #FFFFFF;
+  --primary-container: #D3E3FD;
+  --on-primary-container: #041E49;
+
+  --success: #146C2E;
+  --success-container: #C4EED0;
+  --warning: #7A5900;
+  --warning-container: #FFE8A3;
+  --error: #B3261E;
+  --error-container: #F9DEDC;
+
+  --shadow-1: none;
+  --shadow-2: none;
+  --shadow-3: none;
+
+  --r-xs: 8px; --r-sm: 12px; --r-md: 16px; --r-lg: 24px; --r-xl: 28px; --r-pill: 999px;
+
+  --font: "Inter", "Google Sans Text", Roboto, "Segoe UI", system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Google Sans Flex", "Google Sans", Inter, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --ease: cubic-bezier(.2, 0, 0, 1);
+  --ease-out: cubic-bezier(.05, .7, .1, 1);
+  --dur-1: 150ms; --dur-2: 250ms; --dur-3: 400ms;
+
+  --rail-w: 88px;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #131314;
+  --surface: #1B1B1D;
+  --container-low: #1E1F20;
+  --container: #282A2C;
+  --container-high: #333537;
+  --outline: #5F6368;
+  --outline-soft: #2E3032;
+
+  --text: #E3E3E3;
+  --text-2: #C4C7C5;
+  --text-3: #9AA0A6;
+
+  --primary: #A8C7FA;
+  --on-primary: #062E6F;
+  --primary-container: #0842A0;
+  --on-primary-container: #D3E3FD;
+
+  --success: #6DD58C;
+  --success-container: #0F5223;
+  --warning: #FFD866;
+  --warning-container: #4F3D00;
+  --error: #F2B8B5;
+  --error-container: #601410;
+
+  --shadow-1: none;
+  --shadow-2: none;
+  --shadow-3: none;
+  color-scheme: dark;
+}

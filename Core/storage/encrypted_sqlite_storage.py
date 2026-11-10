@@ -7,6 +7,10 @@ from typing import List, Optional, Tuple
 from Core.storage.database_interface import IDatabaseStorage
 
 
+TEMPLATE_FORMAT_LEGACY = 1   # single 128-value thumbnail vector (pre deep-embedding)
+TEMPLATE_FORMAT_GALLERY = 2  # multi-angle FaceTemplate gallery
+
+
 class EncryptedSQLiteStorage(IDatabaseStorage):
     """SQLite implementation storing encrypted face vectors and password hashes."""
 
@@ -38,17 +42,35 @@ class EncryptedSQLiteStorage(IDatabaseStorage):
                     FOREIGN KEY (user_id) REFERENCES users(user_id)
                 )
             """)
+            columns = {row[1] for row in cursor.execute("PRAGMA table_info(users)")}
+            if "os_user" not in columns:
+                # Which operating-system account this face profile unlocks (lock screen, sudo, app gate).
+                cursor.execute("ALTER TABLE users ADD COLUMN os_user TEXT")
+            if "template_format" not in columns:
+                # Rows created before the deep-embedding pipeline default to format 1 (legacy).
+                cursor.execute("ALTER TABLE users ADD COLUMN template_format INTEGER NOT NULL DEFAULT 1")
             conn.commit()
 
-    def save_user(self, user_id: str, username: str, encrypted_embedding: bytes, salt: bytes) -> bool:
+    def save_user(
+        self, user_id: str, username: str, encrypted_embedding: bytes, salt: bytes,
+        template_format: int = TEMPLATE_FORMAT_GALLERY,
+    ) -> bool:
         """Insert or replace a user template."""
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
+                # Upsert (not REPLACE) so the OS-account link and creation time survive re-scans
+                # and adaptive template updates.
                 cursor.execute("""
-                    INSERT OR REPLACE INTO users (user_id, username, encrypted_embedding, salt)
-                    VALUES (?, ?, ?, ?)
-                """, (user_id, username, encrypted_embedding, salt))
+                    INSERT INTO users
+                        (user_id, username, encrypted_embedding, salt, template_format)
+                    VALUES (?, ?, ?, ?, ?)
+                    ON CONFLICT(user_id) DO UPDATE SET
+                        username = excluded.username,
+                        encrypted_embedding = excluded.encrypted_embedding,
+                        salt = excluded.salt,
+                        template_format = excluded.template_format
+                """, (user_id, username, encrypted_embedding, salt, template_format))
                 conn.commit()
             return True
         except Exception:
@@ -61,6 +83,38 @@ class EncryptedSQLiteStorage(IDatabaseStorage):
             cursor.execute("SELECT encrypted_embedding FROM users WHERE user_id = ?", (user_id,))
             row = cursor.fetchone()
             return row[0] if row else None
+
+    def set_os_user(self, user_id: str, os_user: Optional[str]) -> bool:
+        """Link a face profile to an OS account name (None to unlink)."""
+        with self._get_connection() as conn:
+            cur = conn.execute("UPDATE users SET os_user = ? WHERE user_id = ?", (os_user, user_id))
+            return cur.rowcount > 0
+
+    def get_os_user(self, user_id: str) -> Optional[str]:
+        with self._get_connection() as conn:
+            row = conn.execute("SELECT os_user FROM users WHERE user_id = ?", (user_id,)).fetchone()
+            return row[0] if row else None
+
+    def find_user_by_os_account(self, os_user: str) -> Optional[str]:
+        """The face profile linked to this OS account, if any."""
+        if not os_user:
+            return None
+        with self._get_connection() as conn:
+            row = conn.execute(
+                "SELECT user_id FROM users WHERE os_user = ? ORDER BY created_at LIMIT 1", (os_user,)
+            ).fetchone()
+            return row[0] if row else None
+
+    def os_account_taken(self, os_user: str) -> bool:
+        return self.find_user_by_os_account(os_user) is not None
+
+    def get_template_format(self, user_id: str) -> Optional[int]:
+        """Return the stored template format for a user, or None if not enrolled."""
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT template_format FROM users WHERE user_id = ?", (user_id,))
+            row = cursor.fetchone()
+            return int(row[0]) if row else None
 
     def get_all_users(self) -> List[Tuple[str, str, bytes, bytes]]:
         """Return list of all registered users."""

@@ -13,9 +13,20 @@ class IDatabaseStorage(ABC):
         pass
 
     @abstractmethod
-    def save_user(self, user_id: str, username: str, encrypted_embedding: bytes, salt: bytes) -> bool:
+    def save_user(
+        self, user_id: str, username: str, encrypted_embedding: bytes, salt: bytes,
+        template_format: int = 2,
+    ) -> bool:
         """Store new user record with encrypted template."""
         pass
+
+    def find_user_by_os_account(self, os_user: str) -> Optional[str]:
+        """Face profile linked to an OS account (None when the backend has no such link)."""
+        return None
+
+    def get_template_format(self, user_id: str) -> Optional[int]:
+        """Template format of a stored user (1 = legacy thumbnail, 2 = gallery)."""
+        return 2 if self.get_user_embedding(user_id) is not None else None
 
     @abstractmethod
     def get_user_embedding(self, user_id: str) -> Optional[bytes]:

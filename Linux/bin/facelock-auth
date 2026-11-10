@@ -30,13 +30,13 @@ def main() -> int:
             print(f"❌ User '{args.user}' is not enrolled in FaceLock database.")
             return 1
 
-        print("📷 Accessing camera & performing anti-spoof liveness check...")
-        if client.authenticate_face(args.user, args.secret):
-            print("✅ BIOMETRIC MATCH VERIFIED — Access Granted!")
+        print("📷 Look at the camera — you can move your head slightly; scanning for a few seconds...")
+        resp = client.authenticate_face_detailed(args.user, args.secret)
+        if resp.get("result"):
+            print(f"✅ BIOMETRIC MATCH VERIFIED — Access Granted! (score {resp.get('similarity', 0):.2f})")
             return 0
-        else:
-            print("❌ ACCESS DENIED — Biometric face mismatch or liveness check failed.")
-            return 1
+        print(f"❌ ACCESS DENIED — {resp.get('message', 'Face did not match')}.")
+        return 1
     except ConnectionRefusedError:
         print("⚠️ FaceLock daemon service is offline (~/.facelock/facelock.sock).")
         return 2

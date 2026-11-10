@@ -19,10 +19,24 @@ if str(project_root) not in sys.path:
 from Service.auth.service_client import ServiceClient
 from Core.config.loader import ConfigLoader
 from Core.storage.encrypted_sqlite_storage import EncryptedSQLiteStorage
+from Core.authentication.password_fallback import PasswordFallback
 
 
 def resolve_user(client: ServiceClient, requested_user: str = None) -> str:
-    """Resolve requested user or fallback to enrolled database users."""
+    """Resolve the face profile for this launch.
+
+    Order: the profile linked to this OS account at enrollment, an explicit --user,
+    a name match, then the only/first enrolled profile.
+    """
+    try:
+        settings = ConfigLoader().load()
+        storage = EncryptedSQLiteStorage(settings.db_path)
+        linked = storage.find_user_by_os_account(os.environ.get("SUDO_USER") or getpass.getuser())
+        if linked:
+            return linked
+    except Exception:
+        pass
+
     if requested_user and client.check_enrolled(requested_user):
         return requested_user
 
@@ -67,6 +81,16 @@ def prompt_passphrase(user_id: str) -> str:
     return ""
 
 
+def verify_passphrase_offline(user_id: str, password: str) -> bool:
+    """Check the fallback passphrase straight from the database (no service needed)."""
+    try:
+        settings = ConfigLoader().load()
+        stored = EncryptedSQLiteStorage(settings.db_path).get_password_hash(user_id)
+        return bool(stored) and PasswordFallback(settings.security.password_hash_iterations).verify_password(password, stored)
+    except Exception:
+        return False
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="FaceLock Real-Time App Protection Gate")
     parser.add_argument("--cmd", required=True, help="Target application executable command")
@@ -97,10 +121,17 @@ def main() -> int:
                 return 0
             print("❌ ACCESS DENIED — Facial & Passphrase verification failed.")
             return 1
-    except ConnectionRefusedError:
-        print("⚠️ FaceLock service daemon offline. Falling back to direct app launch...")
-        subprocess.Popen(args.cmd, shell=True)
-        return 0
+    except (ConnectionRefusedError, FileNotFoundError, ConnectionError, OSError):
+        # Service is down. Never open a protected app without proof: ask for the passphrase
+        # and check it directly against the local database.
+        print("⚠️ FaceLock service is not running. Passphrase required to launch the app.")
+        pw = prompt_passphrase(user_id)
+        if pw and verify_passphrase_offline(user_id, pw):
+            print(f"✅ PASSPHRASE VERIFIED — Launching '{args.cmd}'...")
+            subprocess.Popen(args.cmd, shell=True)
+            return 0
+        print("❌ ACCESS DENIED — Service offline and passphrase not verified.")
+        return 1
 
 
 if __name__ == "__main__":

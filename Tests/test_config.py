@@ -8,8 +8,8 @@ from Core.config.loader import ConfigLoader
 def test_default_settings():
     settings = SystemSettings()
     assert settings.db_name == "facelock.db"
-    assert settings.camera.frame_width == 640
-    assert settings.security.matching_threshold == 0.6
+    assert settings.camera.frame_width == 1280
+    assert settings.security.matching_threshold == 0.40
 
 
 def test_config_loader_save_load(tmp_path: Path):
